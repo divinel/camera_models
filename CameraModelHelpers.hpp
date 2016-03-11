@@ -13,7 +13,7 @@
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
  * 
- * Neither the name of [project] nor the names of its
+ * Neither the name of the copyright holder nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
  * 
@@ -146,6 +146,8 @@ template<typename T>
 class CameraInterface
 {
 public:
+    virtual ~CameraInterface() { }
+    
     virtual CameraModelType getModelType() const = 0;
     virtual const char* getModelName() const = 0;
     virtual bool pixelValid(T x, T y) const = 0;
@@ -393,8 +395,15 @@ public:
 template <typename ModelT>
 class CameraFromCRTP : public ModelT, public CameraInterface<typename ModelT::Scalar>
 {
+public:
     typedef ModelT Derived;
     typedef typename Derived::Scalar Scalar;
+    
+    CameraFromCRTP() = default;
+    CameraFromCRTP(const Derived& d) : Derived(d) { }
+    CameraFromCRTP(const CameraFromCRTP& other) = default;
+    
+    virtual ~CameraFromCRTP() { }
     
     virtual CameraModelType getModelType() const 
     { 

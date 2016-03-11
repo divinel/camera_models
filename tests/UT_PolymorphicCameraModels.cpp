@@ -13,7 +13,7 @@
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
  * 
- * Neither the name of [project] nor the names of its
+ * Neither the name of the copyright holder nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
  * 
@@ -90,8 +90,7 @@ TYPED_TEST(PolymorphicCameraModelTests, TestInverseForward)
     ModelT tmp_camera;
     CameraParameters<ModelT>::configure(tmp_camera);
         
-    std::unique_ptr<camera::CameraFromCRTP<ModelT>> cameraptr(new camera::CameraFromCRTP<ModelT>());
-    camera::CameraInterface<Scalar>* camera = cameraptr.get();
+    std::unique_ptr<camera::CameraInterface<Scalar>> camera(new camera::CameraFromCRTP<ModelT>(tmp_camera));
         
     // something is wrong with this particular model
     if(camera->getModelType() == camera::CameraModelType::SphericalPovRay)
@@ -111,7 +110,7 @@ TYPED_TEST(PolymorphicCameraModelTests, TestInverseForward)
             typename ModelT::PixelT pix((typename ModelT::Scalar)x, (typename ModelT::Scalar)y), pix_out;
             
             // fisheye is not valid outside of the active image area - check pixelValidCircular
-            if(!(camera->getModelType() == camera::CameraModelType::Fisheye) || ( camera->pixelValidCircular(pix) ) )
+            if(!((camera->getModelType() == camera::CameraModelType::Fisheye) || (camera->getModelType() == camera::CameraModelType::IdealFisheye)) || ( camera->pixelValidCircular(pix) ) )
             {
                 typename ModelT::PointT pt;
                 const typename ModelT::Scalar distance = 1.5;
