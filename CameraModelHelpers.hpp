@@ -96,11 +96,15 @@ struct ComplexTypes
     typedef Sophus::SE3Group<T> TransformT;
     typedef Eigen::Map<TransformT> TransformMapT;
     typedef Eigen::Map<const TransformT> ConstTransformMapT;
+    typedef Eigen::Map<RotationT> RotationMapT;
+    typedef Eigen::Map<const RotationT> ConstRotationMapT;
     
     typedef Sophus::SO2Group<T> Rotation2DT;
     typedef Sophus::SE2Group<T> Transform2DT;
     typedef Eigen::Map<Transform2DT> Transform2DMapT;
     typedef Eigen::Map<const Transform2DT> ConstTransform2DMapT;
+    typedef Eigen::Map<Rotation2DT> Rotation2DMapT;
+    typedef Eigen::Map<const Rotation2DT> ConstRotation2DMapT;
     
     typedef typename Sophus::SE3Group<T>::Tangent TangentTransformT;
     typedef Eigen::Map<typename Sophus::SE3Group<T>::Tangent> TangentTransformMapT;
@@ -109,6 +113,14 @@ struct ComplexTypes
     typedef typename Sophus::SE2Group<T>::Tangent TangentTransform2DT;
     typedef Eigen::Map<typename Sophus::SE2Group<T>::Tangent> TangentTransform2DMapT;
     typedef Eigen::Map<const typename Sophus::SE2Group<T>::Tangent> ConstTangentTransform2DMapT;
+    
+    typedef typename Sophus::SO3Group<T>::Tangent TangentRotationT;
+    typedef Eigen::Map<typename Sophus::SO3Group<T>::Tangent> TangentRotationMapT;
+    typedef Eigen::Map<const typename Sophus::SO3Group<T>::Tangent> ConstTangentRotationMapT;
+    
+    typedef typename Sophus::SO2Group<T>::Tangent TangentRotation2DT;
+    typedef Eigen::Map<typename Sophus::SO2Group<T>::Tangent> TangentRotation2DMapT;
+    typedef Eigen::Map<const typename Sophus::SO2Group<T>::Tangent> ConstTangentRotation2DMapT;
     
     typedef Eigen::Matrix<T,2,1> PixelT;
     typedef Eigen::Map<PixelT> PixelMapT;
