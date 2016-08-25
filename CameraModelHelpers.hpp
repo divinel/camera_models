@@ -171,11 +171,13 @@ public:
     virtual typename ComplexTypes<T>::PointT inverse(T x, T y) const = 0;
     virtual typename ComplexTypes<T>::PixelT forward(const typename ComplexTypes<T>::TransformT& pose, 
                                                      const typename ComplexTypes<T>::PointT& pt) const = 0;
+    virtual typename ComplexTypes<T>::PixelT forward(const typename ComplexTypes<T>::RotationT& pose, 
+                                                    const typename ComplexTypes<T>::PointT& pt) const = 0;
     virtual typename ComplexTypes<T>::PointT inverse(const typename ComplexTypes<T>::PixelT& pix) const = 0;
     virtual typename ComplexTypes<T>::PointT inverseAtDistance(const typename ComplexTypes<T>::PixelT& pix, T dist) const = 0;
     virtual typename ComplexTypes<T>::PointT inverseAtDistance(T x, T y, T dist) const = 0;
     virtual typename ComplexTypes<T>::PointT inverseAtDistance(const typename ComplexTypes<T>::TransformT& pose, 
-                                                               const typename ComplexTypes<T>::PixelT& pix, T dist) const = 0;                                                            
+                                                               const typename ComplexTypes<T>::PixelT& pix, T dist) const = 0;
     virtual typename ComplexTypes<T>::PointT inverseAtDistance(const typename ComplexTypes<T>::TransformT& pose, 
                                                                T x, T y, T dist) const = 0;
     virtual typename ComplexTypes<T>::PixelT twoFrameProject(const typename ComplexTypes<T>::TransformT& pose1, 
@@ -208,6 +210,18 @@ public:
     }
     
     template<typename T = Scalar>
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PointT worldToCamera(const typename ComplexTypes<T>::RotationT& pose, const typename ComplexTypes<T>::PointT& pt) 
+    {
+        return pose.inverse() * pt; // why!
+    }
+    
+    template<typename T = Scalar>
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PointT cameraToWorld(const typename ComplexTypes<T>::RotationT& pose, const typename ComplexTypes<T>::PointT& pt) 
+    {
+        return pose * pt; // why!
+    }
+    
+    template<typename T = Scalar>
     static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE bool pixelValid(const Derived& ccd, const typename ComplexTypes<T>::PixelT& pt)
     {
         return Derived::template pixelValidSquare<T>(ccd, pt(0), pt(1));
@@ -234,6 +248,14 @@ public:
     template<typename T = Scalar>
     static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PixelT forward(const Derived& ccd, 
                                                                                           const typename ComplexTypes<T>::TransformT& pose, 
+                                                                                          const typename ComplexTypes<T>::PointT& pt)
+    {
+        return Derived::template forward<T>(ccd, worldToCamera<T>(pose, pt));
+    }
+    
+    template<typename T = Scalar>
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PixelT forward(const Derived& ccd, 
+                                                                                          const typename ComplexTypes<T>::RotationT& pose, 
                                                                                           const typename ComplexTypes<T>::PointT& pt)
     {
         return Derived::template forward<T>(ccd, worldToCamera<T>(pose, pt));
@@ -356,6 +378,12 @@ public:
     }
     
     template<typename T = Scalar>
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PixelT forward(const typename ComplexTypes<T>::RotationT& pose, const typename ComplexTypes<T>::PointT& pt) const
+    {
+        return CameraFunctions::forward<T>(*static_cast<const Derived*>(this), pose, pt);
+    }
+    
+    template<typename T = Scalar>
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PointT inverse(const typename ComplexTypes<T>::PixelT& pix) const
     {
         return CameraFunctions::inverse<T>(*static_cast<const Derived*>(this), pix);
@@ -463,6 +491,12 @@ public:
     }
     
     virtual typename ComplexTypes<Scalar>::PixelT forward(const typename ComplexTypes<Scalar>::TransformT& pose, 
+                                                          const typename ComplexTypes<Scalar>::PointT& pt) const 
+    { 
+        return Derived::template forward<Scalar>(pose, pt); 
+    }
+    
+    virtual typename ComplexTypes<Scalar>::PixelT forward(const typename ComplexTypes<Scalar>::RotationT& pose, 
                                                           const typename ComplexTypes<Scalar>::PointT& pt) const 
     { 
         return Derived::template forward<Scalar>(pose, pt); 
