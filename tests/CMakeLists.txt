@@ -35,9 +35,6 @@ cmake_minimum_required(VERSION 2.8)
 # Google Log
 find_package(Glog REQUIRED QUIET)
 include_directories(${GLOG_INCLUDE_DIRS})
-# Google Test
-find_package(GTest REQUIRED QUIET)
-include_directories(${GLOG_INCLUDE_DIRS})
 
 # ------------------------------------------------------------------------------
 # Internal headers for tests

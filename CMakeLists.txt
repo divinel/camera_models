@@ -119,4 +119,10 @@ export( PACKAGE CameraModels )
 # ---------------------------------------------
 # Unit Tests
 # ---------------------------------------------
-add_subdirectory(tests)
+if(DEFINED BUILD_TESTS)
+    if(BUILD_TESTS)
+        add_subdirectory(tests)
+    endif()
+else()
+    add_subdirectory(tests)
+endif()
