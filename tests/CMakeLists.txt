@@ -35,6 +35,9 @@ cmake_minimum_required(VERSION 2.8)
 # Google Log
 find_package(Glog REQUIRED QUIET)
 include_directories(${GLOG_INCLUDE_DIRS})
+# Google Test
+find_package(GTest REQUIRED QUIET)
+include_directories(${GTEST_INCLUDE_DIR})
 
 # ------------------------------------------------------------------------------
 # Internal headers for tests
@@ -59,7 +62,7 @@ add_executable(UT_CameraModels ${TEST_SOURCES})
 # --------------------------------------------------
 # Link external dependencies
 # --------------------------------------------------
-target_link_libraries(UT_CameraModels ${GLOG_LIBRARIES} ${GTEST_LIBRARIES} camera_models)
+target_link_libraries(UT_CameraModels ${GLOG_LIBRARIES} ${GTEST_LIBRARY} camera_models)
 
 # --------------------------------------------------
 # Add the test so it can be run with make test
