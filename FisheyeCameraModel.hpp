@@ -174,8 +174,10 @@ public:
         
         const T theta_d = theta + ccd.k1() * theta3 + ccd.k2() * theta5 + ccd.k3()*theta7 + ccd.k4() * theta9;
         
-        T inv_r = r > T(1e-8) ? T(1.0)/r : T(1.0);
-        T cdist = r > T(1e-8) ? theta_d * inv_r : T(1.0);
+        T inv_r(1.0);
+        if( r > T(1e-8) ) { inv_r = T(1.0)/r; } 
+        T cdist(1.0);
+        if( r > T(1e-8) ) { cdist = theta_d * inv_r; } 
         
         const typename ComplexTypes<T>::PixelT xd1(a * cdist, b * cdist);
         const typename ComplexTypes<T>::PixelT xd3(xd1(0) + ccd.skew() * xd1(1), xd1(1));

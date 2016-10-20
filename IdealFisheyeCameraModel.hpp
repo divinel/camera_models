@@ -152,8 +152,10 @@ public:
         const T r = sqrt(r2);
         const T theta = atan(r);
         
-        T inv_r = r > T(1e-8) ? T(1.0)/r : T(1.0);
-        T cdist = r > T(1e-8) ? theta * inv_r : T(1.0);
+        T inv_r(1.0);
+        if( r > T(1e-8) ) { inv_r = T(1.0)/r; } 
+        T cdist(1.0);
+        if( r > T(1e-8) ) { cdist = theta * inv_r; }
         
         const typename ComplexTypes<T>::PixelT xd1(a * cdist, b * cdist);
         const typename ComplexTypes<T>::PixelT xd3(xd1(0), xd1(1));
