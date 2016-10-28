@@ -11,7 +11,7 @@
 # this list of conditions and the following disclaimer in the documentation
 # and/or other materials provided with the distribution.
 # 
-# Neither the name of [project] nor the names of its
+# Neither the name of the copyright holder nor the names of its
 # contributors may be used to endorse or promote products derived from
 # this software without specific prior written permission.
 # 
@@ -27,39 +27,57 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 # ------------------------------------------------------------------------------
 
-cmake_minimum_required(VERSION 2.8)
-
-project(CameraModels)
+cmake_minimum_required(VERSION 3.1)
 
 # ------------------------------------------------------------------------------
-# Where to look for find-packages
+# Default build configuration
 # ------------------------------------------------------------------------------
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules/")
-
-# ------------------------------------------------------------------------------
-# C++11
-# ------------------------------------------------------------------------------
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
-check_cxx_compiler_flag("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
-if(COMPILER_SUPPORTS_CXX11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-elseif(COMPILER_SUPPORTS_CXX0X)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+if(DEFINED CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Build type.")
 else()
-    message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type.")
 endif()
+
+# ------------------------------------------------------------------------------
+# Project name & version
+# ------------------------------------------------------------------------------
+project(CameraModels)
+set(${PROJECT_NAME}_VERSION 1.0.0)
+
+# ------------------------------------------------------------------------------
+# Enable C++11 and high level warnings
+# ------------------------------------------------------------------------------
+set(CMAKE_CXX_STANDARD 11) 
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_compile_options(-Wall -Wextra -pedantic -Wno-unused-parameter -Wno-unused-private-field -Wno-unused-variable)
+
+# ------------------------------------------------------------------------------
+# Ready for testing
+# ------------------------------------------------------------------------------
+option(BUILD_TESTS "Enable to build unit tests" ON)
+if(BUILD_TESTS)
+  enable_testing()
+    
+  # Code Coverage Build Type
+  set(CMAKE_CXX_FLAGS_COVERAGE "-g -O0 --coverage -fprofile-arcs -ftest-coverage" CACHE STRING "Flags used by the C++ compiler during coverage builds." FORCE)
+  set(CMAKE_C_FLAGS_COVERAGE "-g -O0 --coverage -fprofile-arcs -ftest-coverage" CACHE STRING "Flags used by the C compiler during coverage builds." FORCE )
+  set(CMAKE_EXE_LINKER_FLAGS_COVERAGE "" CACHE STRING "Flags used for linking binaries during coverage builds." FORCE )
+  set(CMAKE_SHARED_LINKER_FLAGS_COVERAGE "" CACHE STRING "Flags used by the shared libraries linker during coverage builds." FORCE)
+  mark_as_advanced(CMAKE_CXX_FLAGS_COVERAGE CMAKE_C_FLAGS_COVERAGE CMAKE_EXE_LINKER_FLAGS_COVERAGE CMAKE_SHARED_LINKER_FLAGS_COVERAGE)
+endif()
+
+include(GenerateExportHeader)
+
+# ------------------------------------------------------------------------------
+# Print Project Info
+# ------------------------------------------------------------------------------
+message("Project: ${PROJECT_NAME} / ${${PROJECT_NAME}_VERSION}, build type: ${CMAKE_BUILD_TYPE}, compiled on: ${CMAKE_SYSTEM}, flags: ${CMAKE_CXX_FLAGS}")
 
 # ----------------------------------------
 # Dependencies
 # ----------------------------------------
-# Eigen
 find_package(Eigen3 REQUIRED QUIET)
-include_directories(${EIGEN3_INCLUDE_DIR})
-
-# Sophus
 find_package(Sophus REQUIRED QUIET)
-include_directories(${Sophus_INCLUDE_DIR})
 
 # ---------------------------------------------
 # Our headers
@@ -94,35 +112,55 @@ sources/CameraModels.cpp
 # ---------------------------------------------
 # Build
 # ---------------------------------------------
-add_library(camera_models SHARED ${SOURCES} ${HEADERS})
-
-# --------------------------------------------------------------------------------
-# Install
-# --------------------------------------------------------------------------------
-install(FILES 
-${HEADERS}
-DESTINATION include
-)
-
-install(TARGETS camera_models
-RUNTIME DESTINATION bin
-LIBRARY DESTINATION lib
-ARCHIVE DESTINATION lib
-)
-
-set(CAMERA_MODELS_FOUND TRUE)
-set(CAMERA_MODELS_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} ${EIGEN3_INCLUDE_DIR} )
-
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/CameraModelsConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/CameraModelsConfig.cmake @ONLY IMMEDIATE)
-export( PACKAGE CameraModels )
+add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
+target_include_directories(${PROJECT_NAME} PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:>
+    PRIVATE sources)
+target_include_directories(${PROJECT_NAME} PUBLIC ${EIGEN3_INCLUDE_DIR})
+target_include_directories(${PROJECT_NAME} PUBLIC ${Sophus_INCLUDE_DIR})
 
 # ---------------------------------------------
 # Unit Tests
 # ---------------------------------------------
-if(DEFINED BUILD_TESTS)
-    if(BUILD_TESTS)
-        add_subdirectory(tests)
-    endif()
-else()
+if(BUILD_TESTS)
     add_subdirectory(tests)
 endif()
+
+# ------------------------------------------------------------------------------
+# Installation - library
+# ------------------------------------------------------------------------------
+generate_export_header(${PROJECT_NAME})
+set_property(TARGET ${PROJECT_NAME} PROPERTY VERSION ${${PROJECT_NAME}_VERSION})
+set_property(TARGET ${PROJECT_NAME} PROPERTY SOVERSION 1)
+set_property(TARGET ${PROJECT_NAME} PROPERTY INTERFACE_${PROJECT_NAME}_MAJOR_VERSION 1)
+set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY COMPATIBLE_INTERFACE_STRING ${PROJECT_NAME}_MAJOR_VERSION)
+
+install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Targets
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include)
+install(FILES ${HEADERS} "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}_export.h" DESTINATION include)
+
+# ------------------------------------------------------------------------------
+# Installation - generate version file
+# ------------------------------------------------------------------------------
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+  VERSION ${${PROJECT_NAME}_VERSION}
+  COMPATIBILITY AnyNewerVersion
+)
+
+# ------------------------------------------------------------------------------
+# Installation - Export Targets
+# ------------------------------------------------------------------------------
+export(EXPORT ${PROJECT_NAME}Targets FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake") 
+set(CAMERAMODELS_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
+configure_file(${PROJECT_NAME}Config.cmake.in "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" @ONLY)
+set(ConfigPackageLocation lib/cmake/${PROJECT_NAME})
+install(EXPORT ${PROJECT_NAME}Targets FILE ${PROJECT_NAME}Targets.cmake DESTINATION ${ConfigPackageLocation})
+install(FILES ${PROJECT_NAME}Config.cmake "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake" DESTINATION ${ConfigPackageLocation})
+export(PACKAGE ${PROJECT_NAME})
+
