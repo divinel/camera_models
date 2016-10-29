@@ -80,10 +80,8 @@ find_package(Eigen3 REQUIRED QUIET)
 find_package(Sophus REQUIRED QUIET)
 
 # ---------------------------------------------
-# Our headers
+# Sources
 # ---------------------------------------------
-include_directories(.)
-
 set(HEADERS
 CameraModelHelpers.hpp
 CameraModels.hpp
