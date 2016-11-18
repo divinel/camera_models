@@ -83,21 +83,21 @@ find_package(Sophus REQUIRED QUIET)
 # Sources
 # ---------------------------------------------
 set(HEADERS
-CameraModelHelpers.hpp
-CameraModels.hpp
-CameraPyramid.hpp
-FisheyeCameraModel.hpp
-FullGenericCameraModel.hpp
-IdealFisheyeCameraModel.hpp
-IdealGenericCameraModel.hpp
-OpenGLProjectionMatrix.hpp
-PinholeCameraModel.hpp
-PinholeDisparityBrownConrady.hpp
-PinholeDisparityCameraModel.hpp
-PinholeDisparityDistortedCameraModel.hpp
-PinholeDistortedCameraModel.hpp
-SphericalCameraModel.hpp
-SphericalPovRayCameraModel.hpp
+include/CameraModelHelpers.hpp
+include/CameraModels.hpp
+include/CameraPyramid.hpp
+include/FisheyeCameraModel.hpp
+include/FullGenericCameraModel.hpp
+include/IdealFisheyeCameraModel.hpp
+include/IdealGenericCameraModel.hpp
+include/OpenGLProjectionMatrix.hpp
+include/PinholeCameraModel.hpp
+include/PinholeDisparityBrownConrady.hpp
+include/PinholeDisparityCameraModel.hpp
+include/PinholeDisparityDistortedCameraModel.hpp
+include/PinholeDistortedCameraModel.hpp
+include/SphericalCameraModel.hpp
+include/SphericalPovRayCameraModel.hpp
 )
 
 # ----------------------------------------------------------------------
@@ -112,8 +112,8 @@ sources/CameraModels.cpp
 # ---------------------------------------------
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 target_include_directories(${PROJECT_NAME} PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<INSTALL_INTERFACE:>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
     PRIVATE sources)
 target_include_directories(${PROJECT_NAME} PUBLIC ${EIGEN3_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PUBLIC ${Sophus_INCLUDE_DIR})
