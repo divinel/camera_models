@@ -36,6 +36,7 @@
 #ifndef CAMERA_PYRAMID_HPP
 #define CAMERA_PYRAMID_HPP
 
+#include <vector>
 #include <CameraModelHelpers.hpp>
 
 namespace camera
@@ -152,6 +153,137 @@ public:
     }
 protected:
     CameraModelT models[LevelCount];
+};
+
+// Power of two pyramid, runtime number of levels.
+template<typename MODEL_T>
+class RuntimeCameraPyramid
+{
+public:
+    typedef MODEL_T CameraModelT;
+    typedef typename CameraModelT::Scalar Scalar;
+    
+    inline RuntimeCameraPyramid() = delete;
+    
+    inline RuntimeCameraPyramid(std::size_t Levels) : models(Levels)
+    {
+        
+    }
+    
+    inline RuntimeCameraPyramid(std::size_t Levels, const CameraModelT& initial) : models(Levels)
+    {
+        models[0] = initial;
+        pyramidDown();
+    }
+    
+    inline ~RuntimeCameraPyramid()
+    {
+        
+    }
+    
+    inline RuntimeCameraPyramid(const RuntimeCameraPyramid<CameraModelT>& pyramid)
+    {
+        models.resize(pyramid.getLevelCount());
+        
+        for(std::size_t l = 0 ; l < getLevelCount() ; ++l) 
+        {
+            models[l] = pyramid.models[l];
+        }
+    }
+    
+    inline RuntimeCameraPyramid(RuntimeCameraPyramid<CameraModelT>&& pyramid) 
+    {
+        models.resize(pyramid.getLevelCount());
+        
+        for(std::size_t l = 0 ; l < getLevelCount() ; ++l) 
+        {
+            models[l] = std::move(pyramid.models[l]);
+        }
+    }
+    
+    inline RuntimeCameraPyramid<CameraModelT>& operator=(const RuntimeCameraPyramid<CameraModelT>& pyramid)
+    {
+        models.resize(pyramid.getLevelCount());
+        
+        for(std::size_t l = 0 ; l < getLevelCount() ; ++l) 
+        {
+            models[l] = pyramid.models[l];
+        }
+
+        return *this;
+    }
+    
+    inline RuntimeCameraPyramid<CameraModelT>& operator=(RuntimeCameraPyramid<CameraModelT>&& pyramid)
+    {
+        models.resize(pyramid.getLevelCount());
+        
+        for(std::size_t l = 0 ; l < getLevelCount() ; ++l) 
+        {
+            models[l] = std::move(pyramid.models[l]);
+        }
+        
+        return *this;
+    }
+    
+    inline void swap(RuntimeCameraPyramid<CameraModelT>& pyramid)
+    {
+        for(std::size_t l = 0 ; l < getLevelCount() ; ++l) 
+        {
+            models[l].swap(pyramid.models[l]);
+        }
+    }
+    
+    inline void pyramidDown()
+    {
+        for(std::size_t l = 1; l < getLevelCount() ; ++l ) 
+        {
+            CameraModelT prev = models[l-1];
+            prev.resizeViewport(prev.width()/Scalar(2.0),prev.height()/Scalar(2.0));
+            models[l] = prev;
+        }
+    }
+
+    inline CameraModelT& operator[](std::size_t i)
+    {
+        assert(i < getLevelCount());
+        return models[i];
+    }
+
+    inline const CameraModelT& operator[](std::size_t i) const
+    {
+        assert(i < getLevelCount());
+        return models[i];
+    }
+    
+    inline CameraModelT& operator()(std::size_t i)
+    {
+        assert(i < getLevelCount());
+        return models[i];
+    }
+    
+    inline const CameraModelT& operator()(std::size_t i) const
+    {
+        assert(i < getLevelCount());
+        return models[i];
+    }
+
+    inline RuntimeCameraPyramid<CameraModelT> subPyramid(std::size_t startLevel, std::size_t SubLevels)
+    {
+        assert(startLevel + SubLevels < getLevelCount());
+        
+        RuntimeCameraPyramid<CameraModelT> pyr;
+
+        for(std::size_t l = 0 ; l < SubLevels; ++l) 
+        {
+            pyr.models[l] = models[startLevel+l];
+        }
+
+        return pyr;
+    }
+    
+    inline std::size_t getLevelCount() const { return models.size(); }
+protected:
+    std::vector<CameraModelT> models;
 };
 
 }
