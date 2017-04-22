@@ -45,11 +45,11 @@
 // google logger
 #include <glog/logging.h>
 
-#include <CameraModels.hpp>
+#include <CameraModels/CameraModels.hpp>
 
 #include <CameraParameters.hpp>
 
-#include <CameraPyramid.hpp>
+#include <CameraModels/CameraPyramid.hpp>
 
 template<typename ModelT>
 struct IsThisFisheyeModel
@@ -57,10 +57,10 @@ struct IsThisFisheyeModel
     static constexpr bool Answer = false;
 };
 
-template<> struct IsThisFisheyeModel<camera::FisheyeCameraModel<float>> { static constexpr bool Answer = true; };
-template<> struct IsThisFisheyeModel<camera::FisheyeCameraModel<double>> { static constexpr bool Answer = true; };
-template<> struct IsThisFisheyeModel<camera::IdealFisheyeCameraModel<float>> { static constexpr bool Answer = true; };
-template<> struct IsThisFisheyeModel<camera::IdealFisheyeCameraModel<double>> { static constexpr bool Answer = true; };
+template<> struct IsThisFisheyeModel<cammod::Fisheye<float>> { static constexpr bool Answer = true; };
+template<> struct IsThisFisheyeModel<cammod::Fisheye<double>> { static constexpr bool Answer = true; };
+template<> struct IsThisFisheyeModel<cammod::FisheyeDistorted<float>> { static constexpr bool Answer = true; };
+template<> struct IsThisFisheyeModel<cammod::FisheyeDistorted<double>> { static constexpr bool Answer = true; };
 
 template <typename ModelT>
 class PyramidCameraModelTests : public ::testing::Test 
@@ -71,23 +71,23 @@ public:
 
 typedef ::testing::Types<
 // float
-camera::PinholeCameraModel<float>,
-camera::PinholeDistortedCameraModel<float>,
-camera::PinholeDisparityCameraModel<float>,
-camera::PinholeDisparityDistortedCameraModel<float>,
-camera::IdealGenericCameraModel<float>,
-camera::FullGenericCameraModel<float>,
-camera::FisheyeCameraModel<float>,
-camera::IdealFisheyeCameraModel<float>,
+cammod::PinholeDistance<float>,
+cammod::PinholeDistanceDistorted<float>,
+cammod::PinholeDisparity<float>,
+cammod::PinholeDisparityDistorted<float>,
+cammod::Generic<float>,
+cammod::GenericDistorted<float>,
+cammod::Fisheye<float>,
+cammod::FisheyeDistorted<float>,
 // double
-camera::PinholeCameraModel<double>,
-camera::PinholeDistortedCameraModel<double>,
-camera::PinholeDisparityCameraModel<double>,
-camera::PinholeDisparityDistortedCameraModel<double>,
-camera::IdealGenericCameraModel<double>,
-camera::FullGenericCameraModel<double>,
-camera::FisheyeCameraModel<double>,
-camera::IdealFisheyeCameraModel<double>
+cammod::PinholeDistance<double>,
+cammod::PinholeDistanceDistorted<double>,
+cammod::PinholeDisparity<double>,
+cammod::PinholeDisparityDistorted<double>,
+cammod::Generic<double>,
+cammod::GenericDistorted<double>,
+cammod::Fisheye<double>,
+cammod::FisheyeDistorted<double>
 > PyramidCameraModelTypes;
 TYPED_TEST_CASE(PyramidCameraModelTests, PyramidCameraModelTypes);
 
@@ -96,7 +96,7 @@ TYPED_TEST(PyramidCameraModelTests, TestSimple)
     typedef TypeParam ModelT;
     typedef typename ModelT::Scalar Scalar;
     static constexpr std::size_t PyramidLevels = 2;
-    typedef camera::CameraPyramid<ModelT,PyramidLevels> PyramidT;
+    typedef cammod::CameraPyramid<ModelT,PyramidLevels> PyramidT;
     
     ModelT initial_camera;
     CameraParameters<ModelT>::configure(initial_camera);

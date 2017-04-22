@@ -9,17 +9,18 @@ Based on Eigen and Sophus for algebra and 3D transformations.
 ## Features
 Each class provides both normal and static methods for the following functions:
 
-* `forward (3d_point) -> pixel`,
-* `forward (pose, 3d_point) -> pixel`,
-* `inverse (pixel) -> 3d_point`, either unit vector or on image plane Z=1,
-* `inverseAtDistance (pixel, distance) -> 3d_point`,
-* `inverseAtDistance (pose, pixel, distance) -> 3d_point`,
-* `twoFrameProject (pose1, pixel1, pose2) -> 3d_point`,
-* `worldToCamera(pose, 3d_point) -> 3d_point`,
-* `cameraToWorld(pose, 3d_point) -> 3d_point`,
-* `pixelValid(pixel) -> bool`,
-* `cast<NewScalarType>()`,
-* `resizeViewport(dimensions)`.
+* `forward (3d_point) -> pixel` -- project point onto the image,
+* `forward (pose, 3d_point) -> pixel` -- transform & project point onto the image,
+* `inverse (pixel) -> 3d_point` -- lift point, into either unit vector or on image plane Z=1,
+* `inverseAtDistance (pixel, distance) -> 3d_point` -- lift point at distance,
+* `inverseAtDistance (pose, pixel, distance) -> 3d_point` -- lift point at distance & transform into world coordinates,
+* `twoFrameProject (pose1, pixel1, pose2) -> 3d_point` -- lift point at distance & transform into world coordinates with pose1, then project into pose2,
+* `worldToCamera(pose, 3d_point) -> 3d_point` -- transform world coordinate system into camera's (see Conventions!),
+* `cameraToWorld(pose, 3d_point) -> 3d_point` -- transform camera's coordinate system into world (see Conventions!),
+* `pointValid(point) -> bool` -- check if point for `forward` is correct (e.g. z != 0),
+* `pixelValid(pixel) -> bool` -- check if pixel is within sensor bounds,
+* `cast<NewScalarType>()` -- cast the model into another numeric type,
+* `resizeViewport(dimensions)` -- resize model coefficients for new sensor size.
 
 ##### Type safety
 Each model is templated with the scalar type (e.g. float, double). Statically
@@ -37,6 +38,16 @@ being typed with _ceres::Jet_ to carry out the derivation.
 ##### Conventions
 Poses are _Sophus::SE3Group_ Lie algebra transformations, points and pixels are Eigen
 3D and 2D vectors (see [CameraModelHelpers.hpp](CameraModelHelpers.hpp) for conventions).
+
+Beware of worldToCamera/cameraToWorld conventions of transformations, (see [CameraModelHelpers.hpp](CameraModelHelpers.hpp) for details).
+
+##### Jacobians
+Some models might provide hardcoded closed form methods for point & parameters Jacobians. This
+can be queried with the following traits:
+* HasForwardPointJacobian,
+* HasForwardParametersJacobian,
+* HasInversePointJacobian,
+* HasInverseParametersJacobian.
 
 ##### Calibration
 Some models do not support calibration, as it wasn't tested. Each model provides
@@ -60,26 +71,25 @@ way of obtaining the ideal camera model to work on undistorted images.
 
 ## Models supported
 
-* Pinhole - classical pinhole camera model, however inverts with distance,
-* PinholeDistorted - as above, but with radial-tangential distortions,
-* IdealGeneric - Gayer/Baretto/Mei generic central camera model,
-* FullGeneric - as above, but with radial-tangential distortions,
-* Spherical - simple spherical panorama,
-* SphericalPovRay - as above, but following PovRay conventions,
-* IdealFisheye - fisheye camera model as seen in OpenCV 3.0,
-* Fisheye - as above, including extra distortion coefficients,
+* PinholeDistance - classical pinhole camera model, however inverts with distance,
+* PinholeDistanceDistorted - as above, but with radial-tangential distortions,
 * PinholeDisparity - classical pinhole camera model, inverse on the image planes,
 * PinholeDisparityDistorted - as above, but with radial-tangential distortions,
+* Generic - Gayer/Baretto/Mei generic central camera model,
+* GenericDistorted - as above, but with radial-tangential distortions,
+* Spherical - simple spherical panorama,
+* SphericalPovRay - as above, but following PovRay conventions,
+* Fisheye - fisheye camera model as seen in OpenCV 3.0,
+* FisheyeDistorted - as above, including extra distortion coefficients,
 * PinholeDisparityBrownConrady - special case, non invertible. See Intel's librealsense.
 
 ## TODO
 * Much more testing, not just simple forward/inverse checks,
-* Additional projection-unprojection checking functions, tests for chirality etc.,
 * Implement camera rig type to represent multi-camera systems.
 
 ## License
 
-_Copyright © `2015`, `Robert Lukierski`_  
+_Copyright © `2015-2017`, `Robert Lukierski`_  
 _All rights reserved._
 
 Redistribution and use in source and binary forms, with or without

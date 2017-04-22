@@ -84,21 +84,21 @@ find_package(Sophus REQUIRED QUIET)
 # Sources
 # ---------------------------------------------
 set(HEADERS
-include/CameraModelHelpers.hpp
-include/CameraModels.hpp
-include/CameraPyramid.hpp
-include/FisheyeCameraModel.hpp
-include/FullGenericCameraModel.hpp
-include/IdealFisheyeCameraModel.hpp
-include/IdealGenericCameraModel.hpp
-include/OpenGLProjectionMatrix.hpp
-include/PinholeCameraModel.hpp
-include/PinholeDisparityBrownConrady.hpp
-include/PinholeDisparityCameraModel.hpp
-include/PinholeDisparityDistortedCameraModel.hpp
-include/PinholeDistortedCameraModel.hpp
-include/SphericalCameraModel.hpp
-include/SphericalPovRayCameraModel.hpp
+include/CameraModels/CameraModels.hpp
+include/CameraModels/CameraModelUtils.hpp
+include/CameraModels/CameraPyramid.hpp
+include/CameraModels/FisheyeDistorted.hpp
+include/CameraModels/Fisheye.hpp
+include/CameraModels/GenericDistorted.hpp
+include/CameraModels/Generic.hpp
+include/CameraModels/OpenGLProjectionMatrix.hpp
+include/CameraModels/PinholeDisparityBrownConrady.hpp
+include/CameraModels/PinholeDisparityDistorted.hpp
+include/CameraModels/PinholeDisparity.hpp
+include/CameraModels/PinholeDistanceDistorted.hpp
+include/CameraModels/PinholeDistance.hpp
+include/CameraModels/Spherical.hpp
+include/CameraModels/SphericalPovRay.hpp
 )
 
 # ----------------------------------------------------------------------
@@ -161,3 +161,4 @@ set(ConfigPackageLocation lib/cmake/${PROJECT_NAME})
 install(EXPORT ${PROJECT_NAME}Targets FILE ${PROJECT_NAME}Targets.cmake DESTINATION ${ConfigPackageLocation})
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake" DESTINATION ${ConfigPackageLocation})
 export(PACKAGE ${PROJECT_NAME})
+

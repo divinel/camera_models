@@ -37,12 +37,15 @@
 #define CAMERA_PYRAMID_HPP
 
 #include <vector>
-#include <CameraModelHelpers.hpp>
+#include <CameraModels/CameraModelUtils.hpp>
 
-namespace camera
+namespace cammod
 {
 
-// Power of two pyramid.
+/**
+ * Power of two pyramid of camera models.
+ * Compile time number of levels.
+ */
 template<typename MODEL_T, std::size_t Levels>
 class CameraPyramid
 {
@@ -56,6 +59,9 @@ public:
         
     }
     
+    /**
+     * Construct from the model.
+     */
     inline CameraPyramid(const CameraModelT& initial)
     {
         models[0] = initial;
@@ -155,7 +161,10 @@ protected:
     CameraModelT models[LevelCount];
 };
 
-// Power of two pyramid, runtime number of levels.
+/**
+ * Power of two pyramid of camera models.
+ * Runtime number of levels.
+ */
 template<typename MODEL_T>
 class RuntimeCameraPyramid
 {

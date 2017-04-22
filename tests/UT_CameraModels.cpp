@@ -45,7 +45,7 @@
 // google logger
 #include <glog/logging.h>
 
-#include <CameraModels.hpp>
+#include <CameraModels/CameraModels.hpp>
 
 #include <CameraParameters.hpp>
 
@@ -57,8 +57,8 @@ struct IsThisPovRayModel
     static constexpr bool Answer = false;
 };
 
-template<> struct IsThisPovRayModel<camera::SphericalPovRayCameraModel<float>> { static constexpr bool Answer = true; };
-template<> struct IsThisPovRayModel<camera::SphericalPovRayCameraModel<double>> { static constexpr bool Answer = true; };
+template<> struct IsThisPovRayModel<cammod::SphericalPovRay<float>> { static constexpr bool Answer = true; };
+template<> struct IsThisPovRayModel<cammod::SphericalPovRay<double>> { static constexpr bool Answer = true; };
 
 template<typename ModelT>
 struct IsThisSphericalModel
@@ -66,10 +66,10 @@ struct IsThisSphericalModel
     static constexpr bool Answer = false;
 };
 
-template<> struct IsThisSphericalModel<camera::SphericalCameraModel<float>> { static constexpr bool Answer = true; };
-template<> struct IsThisSphericalModel<camera::SphericalCameraModel<double>> { static constexpr bool Answer = true; };
-template<> struct IsThisSphericalModel<camera::SphericalPovRayCameraModel<float>> { static constexpr bool Answer = true; };
-template<> struct IsThisSphericalModel<camera::SphericalPovRayCameraModel<double>> { static constexpr bool Answer = true; };
+template<> struct IsThisSphericalModel<cammod::Spherical<float>> { static constexpr bool Answer = true; };
+template<> struct IsThisSphericalModel<cammod::Spherical<double>> { static constexpr bool Answer = true; };
+template<> struct IsThisSphericalModel<cammod::SphericalPovRay<float>> { static constexpr bool Answer = true; };
+template<> struct IsThisSphericalModel<cammod::SphericalPovRay<double>> { static constexpr bool Answer = true; };
 
 template<typename ModelT>
 struct IsThisFisheyeModel
@@ -77,10 +77,10 @@ struct IsThisFisheyeModel
     static constexpr bool Answer = false;
 };
 
-template<> struct IsThisFisheyeModel<camera::FisheyeCameraModel<float>> { static constexpr bool Answer = true; };
-template<> struct IsThisFisheyeModel<camera::FisheyeCameraModel<double>> { static constexpr bool Answer = true; };
-template<> struct IsThisFisheyeModel<camera::IdealFisheyeCameraModel<float>> { static constexpr bool Answer = true; };
-template<> struct IsThisFisheyeModel<camera::IdealFisheyeCameraModel<double>> { static constexpr bool Answer = true; };
+template<> struct IsThisFisheyeModel<cammod::Fisheye<float>> { static constexpr bool Answer = true; };
+template<> struct IsThisFisheyeModel<cammod::Fisheye<double>> { static constexpr bool Answer = true; };
+template<> struct IsThisFisheyeModel<cammod::FisheyeDistorted<float>> { static constexpr bool Answer = true; };
+template<> struct IsThisFisheyeModel<cammod::FisheyeDistorted<double>> { static constexpr bool Answer = true; };
 
 // -----------------------------------------------------------------------------
 
@@ -93,27 +93,27 @@ public:
 
 typedef ::testing::Types<
 // float
-camera::PinholeCameraModel<float>,
-camera::PinholeDistortedCameraModel<float>,
-camera::PinholeDisparityCameraModel<float>,
-camera::PinholeDisparityDistortedCameraModel<float>,
-camera::IdealGenericCameraModel<float>,
-camera::FullGenericCameraModel<float>,
-camera::SphericalCameraModel<float>,
-camera::SphericalPovRayCameraModel<float>,
-camera::FisheyeCameraModel<float>,
-camera::IdealFisheyeCameraModel<float>,
+cammod::PinholeDistance<float>,
+cammod::PinholeDistanceDistorted<float>,
+cammod::PinholeDisparity<float>,
+cammod::PinholeDisparityDistorted<float>,
+cammod::Generic<float>,
+cammod::GenericDistorted<float>,
+cammod::Spherical<float>,
+cammod::SphericalPovRay<float>,
+cammod::Fisheye<float>,
+cammod::FisheyeDistorted<float>,
 // double
-camera::PinholeCameraModel<double>,
-camera::PinholeDistortedCameraModel<double>,
-camera::PinholeDisparityCameraModel<double>,
-camera::PinholeDisparityDistortedCameraModel<double>,
-camera::IdealGenericCameraModel<double>,
-camera::FullGenericCameraModel<double>,
-camera::SphericalCameraModel<double>,
-camera::SphericalPovRayCameraModel<double>,
-camera::FisheyeCameraModel<double>,
-camera::IdealFisheyeCameraModel<double>
+cammod::PinholeDistance<double>,
+cammod::PinholeDistanceDistorted<double>,
+cammod::PinholeDisparity<double>,
+cammod::PinholeDisparityDistorted<double>,
+cammod::Generic<double>,
+cammod::GenericDistorted<double>,
+cammod::Spherical<double>,
+cammod::SphericalPovRay<double>,
+cammod::Fisheye<double>,
+cammod::FisheyeDistorted<double>
 > CameraModelTypes;
 TYPED_TEST_CASE(CameraModelTests, CameraModelTypes);
 
@@ -139,7 +139,7 @@ TYPED_TEST(CameraModelTests, TestInverseForward)
         scalar_name = "<float>";   
     }
     
-    //LOG(INFO) << "Testing " << camera::CameraModelToTypeAndName<ModelT::ModelType>::Name << scalar_name;
+    //LOG(INFO) << "Testing " << cammod::CameraModelToTypeAndName<ModelT::ModelType>::Name << scalar_name;
     
     typename ModelT::TransformT pose;
     pose.translation() << 10.0 , 20.0, 30.0;
@@ -170,7 +170,7 @@ TYPED_TEST(CameraModelTests, TestInverseForward)
                 {
                     if(err > (Scalar)0.5)
                     {
-                        //LOG(INFO) << camera::CameraModelToTypeAndName<ModelT::ModelType>::Name << scalar_name << ": Error at " << x << "," << y << " is " << pix_out(0) << "," << pix_out(1) << " = " << err << " / for " << pt(0) << " , " << pt(1) << " , " << pt(2);
+                        //LOG(INFO) << cammod::CameraModelToTypeAndName<ModelT::ModelType>::Name << scalar_name << ": Error at " << x << "," << y << " is " << pix_out(0) << "," << pix_out(1) << " = " << err << " / for " << pt(0) << " , " << pt(1) << " , " << pt(2);
                         cnt_bad++;
                     }
                     else

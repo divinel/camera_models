@@ -39,125 +39,125 @@
 /**
  * Pinhole no distortions, using distance for inverse.
  */
-#include <PinholeCameraModel.hpp>
+#include <CameraModels/PinholeDistance.hpp>
 
 /**
  * Pinhole, using distance for inverse.
  */
-#include <PinholeDistortedCameraModel.hpp> 
-
-/**
- * Gayer-Baretto-Mei Model, no distortions.
- */
-#include <IdealGenericCameraModel.hpp>
-
-/**
- * Gayer-Baretto-Mei Model.
- */
-#include <FullGenericCameraModel.hpp> 
-
-/**
- * Simple Spherical Panorama camera model.
- */
-#include <SphericalCameraModel.hpp>
-
-/**
- * Spherical Panorama camera model as in PovRay.
- */
-#include <SphericalPovRayCameraModel.hpp>
-
-/**
- * OpenCV 3.0 Fisheye model.
- */
-#include <FisheyeCameraModel.hpp> 
-
-/**
- * OpenCV 3.0 Fisheye model, no distortions.
- */
-#include <IdealFisheyeCameraModel.hpp> 
+#include <CameraModels/PinholeDistanceDistorted.hpp> 
 
 /**
  * Pinhole no distortions, inverse in depth/planes (not distance).
  */
-#include <PinholeDisparityCameraModel.hpp> 
+#include <CameraModels/PinholeDisparity.hpp> 
 
 /**
  * Pinhole, inverse in image planes (not distance).
  */
-#include <PinholeDisparityDistortedCameraModel.hpp> 
+#include <CameraModels/PinholeDisparityDistorted.hpp> 
+
+/**
+ * Gayer-Baretto-Mei Model, no distortions.
+ */
+#include <CameraModels/Generic.hpp>
+
+/**
+ * Gayer-Baretto-Mei Model.
+ */
+#include <CameraModels/GenericDistorted.hpp> 
+
+/**
+ * Simple Spherical Panorama camera model.
+ */
+#include <CameraModels/Spherical.hpp>
+
+/**
+ * Spherical Panorama camera model as in PovRay.
+ */
+#include <CameraModels/SphericalPovRay.hpp>
+
+/**
+ * OpenCV 3.0 Fisheye model.
+ */
+#include <CameraModels/FisheyeDistorted.hpp> 
+
+/**
+ * OpenCV 3.0 Fisheye model, no distortions.
+ */
+#include <CameraModels/Fisheye.hpp> 
 
 /**
  * Pinhole, inverse in image planes (not distance), modified Brown-Conrady distortions (cf Intel librealsense).
  * @note not invertible.
  */
-#include <PinholeDisparityBrownConrady.hpp> 
+#include <CameraModels/PinholeDisparityBrownConrady.hpp> 
 
-namespace camera
+namespace cammod
 {
 
-template<> struct CameraModelToTypeAndName<CameraModelType::Pinhole>
+template<> struct CameraModelToTypeAndName<CameraModelType::PinholeDistance>
 {
-    template<typename T> using ModelT = PinholeCameraModel<T>;
-    static constexpr auto Name = "Pinhole";
+    template<typename T> using ModelT = PinholeDistance<T>;
+    static constexpr auto Name = "PinholeDistance";
 };
 
-template<> struct CameraModelToTypeAndName<CameraModelType::PinholeDistorted>
+template<> struct CameraModelToTypeAndName<CameraModelType::PinholeDistanceDistorted>
 {
-    template<typename T> using ModelT = PinholeDistortedCameraModel<T>;
-    static constexpr auto Name = "PinholeDistorted";
-};
-
-template<> struct CameraModelToTypeAndName<CameraModelType::IdealGeneric>
-{
-    template<typename T> using ModelT = IdealGenericCameraModel<T>;
-    static constexpr auto Name = "IdealGeneric";
-};
-
-template<> struct CameraModelToTypeAndName<CameraModelType::FullGeneric>
-{
-    template<typename T> using ModelT = FullGenericCameraModel<T>;
-    static constexpr auto Name = "FullGeneric";
-};
-
-template<> struct CameraModelToTypeAndName<CameraModelType::Spherical>
-{
-    template<typename T> using ModelT = SphericalCameraModel<T>;
-    static constexpr auto Name = "Spherical";
-};
-
-template<> struct CameraModelToTypeAndName<CameraModelType::SphericalPovRay>
-{
-    template<typename T> using ModelT = SphericalPovRayCameraModel<T>;
-    static constexpr auto Name = "SphericalPovRay";
-};
-
-template<> struct CameraModelToTypeAndName<CameraModelType::Fisheye>
-{
-    template<typename T> using ModelT = FisheyeCameraModel<T>;
-    static constexpr auto Name = "Fisheye";
-};
-
-template<> struct CameraModelToTypeAndName<CameraModelType::IdealFisheye>
-{
-    template<typename T> using ModelT = IdealFisheyeCameraModel<T>;
-    static constexpr auto Name = "IdealFisheye";
+    template<typename T> using ModelT = PinholeDistanceDistorted<T>;
+    static constexpr auto Name = "PinholeDistanceDistorted";
 };
 
 template<> struct CameraModelToTypeAndName<CameraModelType::PinholeDisparity>
 {
-    template<typename T> using ModelT = PinholeDisparityCameraModel<T>;
+    template<typename T> using ModelT = PinholeDisparity<T>;
     static constexpr auto Name = "PinholeDisparity";
 };
 
 template<> struct CameraModelToTypeAndName<CameraModelType::PinholeDisparityDistorted>
 {
-    template<typename T> using ModelT = PinholeDisparityDistortedCameraModel<T>;
+    template<typename T> using ModelT = PinholeDisparityDistorted<T>;
     static constexpr auto Name = "PinholeDisparityDistorted";
+};
+
+template<> struct CameraModelToTypeAndName<CameraModelType::Generic>
+{
+    template<typename T> using ModelT = Generic<T>;
+    static constexpr auto Name = "Generic";
+};
+
+template<> struct CameraModelToTypeAndName<CameraModelType::GenericDistorted>
+{
+    template<typename T> using ModelT = GenericDistorted<T>;
+    static constexpr auto Name = "GenericDistorted";
+};
+
+template<> struct CameraModelToTypeAndName<CameraModelType::Spherical>
+{
+    template<typename T> using ModelT = Spherical<T>;
+    static constexpr auto Name = "Spherical";
+};
+
+template<> struct CameraModelToTypeAndName<CameraModelType::SphericalPovRay>
+{
+    template<typename T> using ModelT = SphericalPovRay<T>;
+    static constexpr auto Name = "SphericalPovRay";
+};
+
+template<> struct CameraModelToTypeAndName<CameraModelType::Fisheye>
+{
+    template<typename T> using ModelT = Fisheye<T>;
+    static constexpr auto Name = "Fisheye";
+};
+
+template<> struct CameraModelToTypeAndName<CameraModelType::FisheyeDistorted>
+{
+    template<typename T> using ModelT = FisheyeDistorted<T>;
+    static constexpr auto Name = "FisheyeDistorted";
 };
 
 template<> struct CameraModelToTypeAndName<CameraModelType::PinholeDisparityBrownConrady>
 {
-    template<typename T> using ModelT = PinholeDisparityBrownConradyCameraModel<T>;
+    template<typename T> using ModelT = PinholeDisparityBrownConrady<T>;
     static constexpr auto Name = "PinholeDisparityBrownConrady";
 };
 

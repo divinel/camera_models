@@ -36,7 +36,7 @@
 #ifndef CAMERA_PARAMETERS_HPP
 #define CAMERA_PARAMETERS_HPP
 
-#include <CameraModels.hpp>
+#include <CameraModels/CameraModels.hpp>
 
 
 template<typename ModelT>
@@ -44,9 +44,9 @@ struct CameraParameters
 {
 };
 
-template<> struct CameraParameters<camera::PinholeCameraModel<float>>
+template<> struct CameraParameters<cammod::PinholeDistance<float>>
 {
-    typedef camera::PinholeCameraModel<float> ModelT;
+    typedef cammod::PinholeDistance<float> ModelT;
     
     static constexpr std::size_t DefaultWidth = 1280;
     static constexpr std::size_t DefaultHeight = 960;
@@ -57,9 +57,9 @@ template<> struct CameraParameters<camera::PinholeCameraModel<float>>
     }
 };
 
-template<> struct CameraParameters<camera::PinholeCameraModel<double>>
+template<> struct CameraParameters<cammod::PinholeDistance<double>>
 {
-    typedef camera::PinholeCameraModel<double> ModelT;
+    typedef cammod::PinholeDistance<double> ModelT;
     
     static constexpr std::size_t DefaultWidth = 1280;
     static constexpr std::size_t DefaultHeight = 960;
@@ -70,9 +70,9 @@ template<> struct CameraParameters<camera::PinholeCameraModel<double>>
     }
 };
 
-template<> struct CameraParameters<camera::PinholeDisparityCameraModel<float>>
+template<> struct CameraParameters<cammod::PinholeDisparity<float>>
 {
-    typedef camera::PinholeDisparityCameraModel<float> ModelT;
+    typedef cammod::PinholeDisparity<float> ModelT;
     
     static constexpr std::size_t DefaultWidth = 1280;
     static constexpr std::size_t DefaultHeight = 960;
@@ -83,9 +83,9 @@ template<> struct CameraParameters<camera::PinholeDisparityCameraModel<float>>
     }
 };
 
-template<> struct CameraParameters<camera::PinholeDisparityCameraModel<double>>
+template<> struct CameraParameters<cammod::PinholeDisparity<double>>
 {
-    typedef camera::PinholeDisparityCameraModel<double> ModelT;
+    typedef cammod::PinholeDisparity<double> ModelT;
     
     static constexpr std::size_t DefaultWidth = 1280;
     static constexpr std::size_t DefaultHeight = 960;
@@ -96,9 +96,9 @@ template<> struct CameraParameters<camera::PinholeDisparityCameraModel<double>>
     }
 };
 
-template<> struct CameraParameters<camera::PinholeDistortedCameraModel<float>>
+template<> struct CameraParameters<cammod::PinholeDistanceDistorted<float>>
 {
-    typedef camera::PinholeDistortedCameraModel<float> ModelT;
+    typedef cammod::PinholeDistanceDistorted<float> ModelT;
     
     static constexpr std::size_t DefaultWidth = 1280;
     static constexpr std::size_t DefaultHeight = 960;
@@ -109,9 +109,9 @@ template<> struct CameraParameters<camera::PinholeDistortedCameraModel<float>>
     }
 };
 
-template<> struct CameraParameters<camera::PinholeDistortedCameraModel<double>>
+template<> struct CameraParameters<cammod::PinholeDistanceDistorted<double>>
 {
-    typedef camera::PinholeDistortedCameraModel<double> ModelT;
+    typedef cammod::PinholeDistanceDistorted<double> ModelT;
     
     static constexpr std::size_t DefaultWidth = 1280;
     static constexpr std::size_t DefaultHeight = 960;
@@ -122,9 +122,9 @@ template<> struct CameraParameters<camera::PinholeDistortedCameraModel<double>>
     }
 };
 
-template<> struct CameraParameters<camera::PinholeDisparityDistortedCameraModel<float>>
+template<> struct CameraParameters<cammod::PinholeDisparityDistorted<float>>
 {
-    typedef camera::PinholeDisparityDistortedCameraModel<float> ModelT;
+    typedef cammod::PinholeDisparityDistorted<float> ModelT;
     
     static constexpr std::size_t DefaultWidth = 1280;
     static constexpr std::size_t DefaultHeight = 960;
@@ -135,9 +135,9 @@ template<> struct CameraParameters<camera::PinholeDisparityDistortedCameraModel<
     }
 };
 
-template<> struct CameraParameters<camera::PinholeDisparityDistortedCameraModel<double>>
+template<> struct CameraParameters<cammod::PinholeDisparityDistorted<double>>
 {
-    typedef camera::PinholeDisparityDistortedCameraModel<double> ModelT;
+    typedef cammod::PinholeDisparityDistorted<double> ModelT;
     
     static constexpr std::size_t DefaultWidth = 1280;
     static constexpr std::size_t DefaultHeight = 960;
@@ -148,9 +148,9 @@ template<> struct CameraParameters<camera::PinholeDisparityDistortedCameraModel<
     }
 };
 
-template<> struct CameraParameters<camera::PinholeDisparityBrownConradyCameraModel<float>>
+template<> struct CameraParameters<cammod::PinholeDisparityBrownConrady<float>>
 {
-    typedef camera::PinholeDisparityBrownConradyCameraModel<float> ModelT;
+    typedef cammod::PinholeDisparityBrownConrady<float> ModelT;
     
     static constexpr std::size_t DefaultWidth = 640;
     static constexpr std::size_t DefaultHeight = 512;
@@ -161,9 +161,9 @@ template<> struct CameraParameters<camera::PinholeDisparityBrownConradyCameraMod
     }
 };
 
-template<> struct CameraParameters<camera::PinholeDisparityBrownConradyCameraModel<double>>
+template<> struct CameraParameters<cammod::PinholeDisparityBrownConrady<double>>
 {
-    typedef camera::PinholeDisparityBrownConradyCameraModel<double> ModelT;
+    typedef cammod::PinholeDisparityBrownConrady<double> ModelT;
     
     static constexpr std::size_t DefaultWidth = 640;
     static constexpr std::size_t DefaultHeight = 512;
@@ -174,9 +174,9 @@ template<> struct CameraParameters<camera::PinholeDisparityBrownConradyCameraMod
     }
 };
 
-template<> struct CameraParameters<camera::FullGenericCameraModel<float>>
+template<> struct CameraParameters<cammod::GenericDistorted<float>>
 {
-    typedef camera::FullGenericCameraModel<float> ModelT;
+    typedef cammod::GenericDistorted<float> ModelT;
     
     static constexpr std::size_t DefaultWidth = 1280;
     static constexpr std::size_t DefaultHeight = 960;
@@ -187,9 +187,9 @@ template<> struct CameraParameters<camera::FullGenericCameraModel<float>>
     }
 };
 
-template<> struct CameraParameters<camera::FullGenericCameraModel<double>>
+template<> struct CameraParameters<cammod::GenericDistorted<double>>
 {
-    typedef camera::FullGenericCameraModel<double> ModelT;
+    typedef cammod::GenericDistorted<double> ModelT;
     
     static constexpr std::size_t DefaultWidth = 1280;
     static constexpr std::size_t DefaultHeight = 960;
@@ -200,9 +200,9 @@ template<> struct CameraParameters<camera::FullGenericCameraModel<double>>
     }
 };
 
-template<> struct CameraParameters<camera::IdealGenericCameraModel<float>>
+template<> struct CameraParameters<cammod::Generic<float>>
 {
-    typedef camera::IdealGenericCameraModel<float> ModelT;
+    typedef cammod::Generic<float> ModelT;
     
     static constexpr std::size_t DefaultWidth = 1280;
     static constexpr std::size_t DefaultHeight = 960;
@@ -213,9 +213,9 @@ template<> struct CameraParameters<camera::IdealGenericCameraModel<float>>
     }
 };
 
-template<> struct CameraParameters<camera::IdealGenericCameraModel<double>>
+template<> struct CameraParameters<cammod::Generic<double>>
 {
-    typedef camera::IdealGenericCameraModel<double> ModelT;
+    typedef cammod::Generic<double> ModelT;
     
     static constexpr std::size_t DefaultWidth = 1280;
     static constexpr std::size_t DefaultHeight = 960;
@@ -229,9 +229,9 @@ template<> struct CameraParameters<camera::IdealGenericCameraModel<double>>
 static constexpr float FisheyeRadius = 500.0f;
 static constexpr float IdealFisheyeRadius = 495.0f;
 
-template<> struct CameraParameters<camera::FisheyeCameraModel<float>>
+template<> struct CameraParameters<cammod::FisheyeDistorted<float>>
 {
-    typedef camera::FisheyeCameraModel<float> ModelT;
+    typedef cammod::FisheyeDistorted<float> ModelT;
     
     static constexpr std::size_t DefaultWidth = 1600;
     static constexpr std::size_t DefaultHeight = 1200;
@@ -242,9 +242,9 @@ template<> struct CameraParameters<camera::FisheyeCameraModel<float>>
     }
 };
 
-template<> struct CameraParameters<camera::FisheyeCameraModel<double>>
+template<> struct CameraParameters<cammod::FisheyeDistorted<double>>
 {
-    typedef camera::FisheyeCameraModel<double> ModelT;
+    typedef cammod::FisheyeDistorted<double> ModelT;
     
     static constexpr std::size_t DefaultWidth = 1600;
     static constexpr std::size_t DefaultHeight = 1200;
@@ -255,9 +255,9 @@ template<> struct CameraParameters<camera::FisheyeCameraModel<double>>
     }
 };
 
-template<> struct CameraParameters<camera::IdealFisheyeCameraModel<float>>
+template<> struct CameraParameters<cammod::Fisheye<float>>
 {
-    typedef camera::IdealFisheyeCameraModel<float> ModelT;
+    typedef cammod::Fisheye<float> ModelT;
     
     static constexpr std::size_t DefaultWidth = 1600;
     static constexpr std::size_t DefaultHeight = 1200;
@@ -268,9 +268,9 @@ template<> struct CameraParameters<camera::IdealFisheyeCameraModel<float>>
     }
 };
 
-template<> struct CameraParameters<camera::IdealFisheyeCameraModel<double>>
+template<> struct CameraParameters<cammod::Fisheye<double>>
 {
-    typedef camera::IdealFisheyeCameraModel<double> ModelT;
+    typedef cammod::Fisheye<double> ModelT;
     
     static constexpr std::size_t DefaultWidth = 1600;
     static constexpr std::size_t DefaultHeight = 1200;
@@ -281,9 +281,9 @@ template<> struct CameraParameters<camera::IdealFisheyeCameraModel<double>>
     }
 };
 
-template<> struct CameraParameters<camera::SphericalCameraModel<float>>
+template<> struct CameraParameters<cammod::Spherical<float>>
 {
-    typedef camera::SphericalCameraModel<float> ModelT;
+    typedef cammod::Spherical<float> ModelT;
     
     static constexpr std::size_t DefaultWidth = 2048;
     static constexpr std::size_t DefaultHeight = 256;
@@ -294,9 +294,9 @@ template<> struct CameraParameters<camera::SphericalCameraModel<float>>
     }
 };
 
-template<> struct CameraParameters<camera::SphericalCameraModel<double>>
+template<> struct CameraParameters<cammod::Spherical<double>>
 {
-    typedef camera::SphericalCameraModel<double> ModelT;
+    typedef cammod::Spherical<double> ModelT;
     
     static constexpr std::size_t DefaultWidth = 2048;
     static constexpr std::size_t DefaultHeight = 256;
@@ -307,9 +307,9 @@ template<> struct CameraParameters<camera::SphericalCameraModel<double>>
     }
 };
 
-template<> struct CameraParameters<camera::SphericalPovRayCameraModel<float>>
+template<> struct CameraParameters<cammod::SphericalPovRay<float>>
 {
-    typedef camera::SphericalPovRayCameraModel<float> ModelT;
+    typedef cammod::SphericalPovRay<float> ModelT;
     
     static constexpr std::size_t DefaultWidth = 2048;
     static constexpr std::size_t DefaultHeight = 256;
@@ -320,9 +320,9 @@ template<> struct CameraParameters<camera::SphericalPovRayCameraModel<float>>
     }
 };
 
-template<> struct CameraParameters<camera::SphericalPovRayCameraModel<double>>
+template<> struct CameraParameters<cammod::SphericalPovRay<double>>
 {
-    typedef camera::SphericalPovRayCameraModel<double> ModelT;
+    typedef cammod::SphericalPovRay<double> ModelT;
     
     static constexpr std::size_t DefaultWidth = 2048;
     static constexpr std::size_t DefaultHeight = 256;

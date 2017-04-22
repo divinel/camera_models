@@ -33,8 +33,8 @@
  * ****************************************************************************
  */
 
-#ifndef CAMERA_MODEL_HELPERS_HPP
-#define CAMERA_MODEL_HELPERS_HPP
+#ifndef CAMERA_MODEL_UTILS_HPP
+#define CAMERA_MODEL_UTILS_HPP
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -62,7 +62,7 @@
 #define CAMERA_MODELS_SERIALIZE(ARCHIVE,NAME,VAR) ARCHIVE & boost::serialization::make_nvp(NAME,VAR)
 #endif // CAMERA_MODELS_SERIALIZER_BOOST 
 
-namespace camera
+namespace cammod
 {
 
 /**
@@ -70,16 +70,16 @@ namespace camera
  */
 enum class CameraModelType
 {
-    Pinhole = 0,
-    PinholeDistorted,
-    IdealGeneric,
-    FullGeneric,
+    PinholeDistance = 0,
+    PinholeDistanceDistorted,
+    PinholeDisparity,
+    PinholeDisparityDistorted,
+    Generic,
+    GenericDistorted,
     Spherical,
     SphericalPovRay,
     Fisheye,
-    IdealFisheye,
-    PinholeDisparity,
-    PinholeDisparityDistorted,
+    FisheyeDistorted,
     PinholeDisparityBrownConrady
 };
 
@@ -137,17 +137,38 @@ struct ComplexTypes
     typedef Eigen::Quaternion<T> QuaternionT;
     typedef Eigen::Map<QuaternionT> QuaternionMapT;
     typedef Eigen::Map<const QuaternionT> ConstQuaternionMapT;
+    
+    typedef Eigen::Matrix<T,2,3> ForwardPointJacobianT;
+    typedef Eigen::Map<ForwardPointJacobianT> ForwardPointJacobianMapT;
+    typedef Eigen::Map<const ForwardPointJacobianT> ConstForwardPointJacobianMapT;
+    
+    typedef Eigen::Matrix<T,3,2> InversePointJacobianT;
+    typedef Eigen::Map<InversePointJacobianT> InversePointJacobianMapT;
+    typedef Eigen::Map<const InversePointJacobianT> ConstInversePointJacobianMapT;
+    
+    typedef Eigen::Matrix<T,2,2> DistortionJacobianT;
+    typedef Eigen::Map<DistortionJacobianT> DistortionJacobianMapT;
+    typedef Eigen::Map<const DistortionJacobianT> ConstDistortionJacobianMapT;
+    
+    template<int ParametersToOptimize>
+    using ForwardParametersJacobianT = Eigen::Matrix<T,2,ParametersToOptimize>;
+    template<int ParametersToOptimize>
+    using ForwardParametersJacobianMapT = Eigen::Map<ForwardParametersJacobianT<ParametersToOptimize>>;
+    template<int ParametersToOptimize>
+    using ConstForwardParametersJacobianMapT = Eigen::Map<const ForwardParametersJacobianT<ParametersToOptimize>>;
 };
 
 template<typename T>
 EIGEN_DEVICE_FUNC static inline T getFieldOfView(T focal, T width)
 {
+    using Eigen::numext::atan;
     return T(2.0) * atan(width / (T(2.0) * focal));
 }
 
 template<typename T>
 EIGEN_DEVICE_FUNC static inline T getFocalLength(T fov, T width)
 {
+    using Eigen::numext::tan;
     return width / (T(2.0) * tan(fov / T(2.0)));
 }
 
@@ -162,6 +183,7 @@ public:
     
     virtual CameraModelType getModelType() const = 0;
     virtual const char* getModelName() const = 0;
+    virtual bool pointValid(const typename ComplexTypes<T>::PointT& tmp_pt) const = 0;
     virtual bool pixelValid(T x, T y) const = 0;
     virtual bool pixelValidSquare(T x, T y) const = 0;
     virtual bool pixelValidSquare(const typename ComplexTypes<T>::PixelT& pt) const = 0;
@@ -193,6 +215,11 @@ public:
 template<typename Derived>
 class CameraFunctions 
 {
+    static constexpr unsigned int ParametersToOptimize = Eigen::internal::traits<Derived>::ParametersToOptimize;
+    static constexpr bool HasForwardPointJacobian = Eigen::internal::traits<Derived>::HasForwardPointJacobian;
+    static constexpr bool HasForwardParametersJacobian = Eigen::internal::traits<Derived>::HasForwardParametersJacobian;
+    static constexpr bool HasInversePointJacobian = Eigen::internal::traits<Derived>::HasInversePointJacobian;
+    static constexpr bool HasInverseParametersJacobian = Eigen::internal::traits<Derived>::HasInverseParametersJacobian;
 public:
     typedef typename Eigen::internal::traits<Derived>::Scalar Scalar;
 
@@ -330,6 +357,12 @@ public:
     }
     
     template<typename T = Scalar>
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE bool pointValid(const typename ComplexTypes<T>::PointT& pt) const
+    {
+        return Derived::template pointValid<T>(*static_cast<const Derived*>(this), pt);
+    }
+    
+    template<typename T = Scalar>
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE bool pixelValid(T x, T y) const
     {
         return Derived::template pixelValidSquare<T>(*static_cast<const Derived*>(this), x, y);
@@ -381,6 +414,18 @@ public:
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PixelT forward(const typename ComplexTypes<T>::RotationT& pose, const typename ComplexTypes<T>::PointT& pt) const
     {
         return CameraFunctions::forward<T>(*static_cast<const Derived*>(this), pose, pt);
+    }
+    
+    template<typename T = Scalar>
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename std::enable_if<HasForwardPointJacobian, typename ComplexTypes<T>::ForwardPointJacobianT>::type forwardPointJacobian(const typename ComplexTypes<T>::PointT& pt) const
+    {
+        return Derived::template forwardPointJacobian<T>(*static_cast<const Derived*>(this), pt);
+    }
+    
+    template<typename T = Scalar>
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename std::enable_if<HasForwardParametersJacobian, typename ComplexTypes<T>::template ForwardParametersJacobianT<ParametersToOptimize> >::type forwardParametersJacobian(const typename ComplexTypes<T>::PointT& pt) const
+    {
+        return Derived::template forwardParametersJacobian<T>(*static_cast<const Derived*>(this), pt);
     }
     
     template<typename T = Scalar>
@@ -453,6 +498,11 @@ public:
     virtual const char* getModelName() const
     {
         return CameraModelToTypeAndName<Derived::ModelType>::Name;
+    }
+    
+    virtual bool pointValid(const typename ComplexTypes<Scalar>::PointT& tmp_pt) const
+    {
+        return Derived::template pointValid<Scalar>(tmp_pt); 
     }
     
     virtual bool pixelValid(Scalar x, Scalar y) const 
@@ -549,4 +599,4 @@ public:
 
 }
 
-#endif // CAMERA_MODEL_HELPERS_HPP
+#endif // CAMERA_MODEL_UTILS_HPP

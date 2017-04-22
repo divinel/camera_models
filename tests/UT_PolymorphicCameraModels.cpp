@@ -45,7 +45,7 @@
 // google logger
 #include <glog/logging.h>
 
-#include <CameraModels.hpp>
+#include <CameraModels/CameraModels.hpp>
 
 #include <CameraParameters.hpp>
 
@@ -58,27 +58,27 @@ public:
 
 typedef ::testing::Types<
 // float
-camera::PinholeCameraModel<float>,
-camera::PinholeDistortedCameraModel<float>,
-camera::PinholeDisparityCameraModel<float>,
-camera::PinholeDisparityDistortedCameraModel<float>,
-camera::IdealGenericCameraModel<float>,
-camera::FullGenericCameraModel<float>,
-camera::SphericalCameraModel<float>,
-camera::SphericalPovRayCameraModel<float>,
-camera::FisheyeCameraModel<float>,
-camera::IdealFisheyeCameraModel<float>,
+cammod::PinholeDistance<float>,
+cammod::PinholeDistanceDistorted<float>,
+cammod::PinholeDisparity<float>,
+cammod::PinholeDisparityDistorted<float>,
+cammod::Generic<float>,
+cammod::GenericDistorted<float>,
+cammod::Spherical<float>,
+cammod::SphericalPovRay<float>,
+cammod::Fisheye<float>,
+cammod::FisheyeDistorted<float>,
 // double
-camera::PinholeCameraModel<double>,
-camera::PinholeDistortedCameraModel<double>,
-camera::PinholeDisparityCameraModel<double>,
-camera::PinholeDisparityDistortedCameraModel<double>,
-camera::IdealGenericCameraModel<double>,
-camera::FullGenericCameraModel<double>,
-camera::SphericalCameraModel<double>,
-camera::SphericalPovRayCameraModel<double>,
-camera::FisheyeCameraModel<double>,
-camera::IdealFisheyeCameraModel<double>
+cammod::PinholeDistance<double>,
+cammod::PinholeDistanceDistorted<double>,
+cammod::PinholeDisparity<double>,
+cammod::PinholeDisparityDistorted<double>,
+cammod::Generic<double>,
+cammod::GenericDistorted<double>,
+cammod::Spherical<double>,
+cammod::SphericalPovRay<double>,
+cammod::Fisheye<double>,
+cammod::FisheyeDistorted<double>
 > PolymorphicCameraModelTypes;
 TYPED_TEST_CASE(PolymorphicCameraModelTests, PolymorphicCameraModelTypes);
 
@@ -90,10 +90,10 @@ TYPED_TEST(PolymorphicCameraModelTests, TestInverseForward)
     ModelT tmp_camera;
     CameraParameters<ModelT>::configure(tmp_camera);
         
-    std::unique_ptr<camera::CameraInterface<Scalar>> camera(new camera::CameraFromCRTP<ModelT>(tmp_camera));
+    std::unique_ptr<cammod::CameraInterface<Scalar>> camera(new cammod::CameraFromCRTP<ModelT>(tmp_camera));
         
     // something is wrong with this particular model
-    if(camera->getModelType() == camera::CameraModelType::SphericalPovRay)
+    if(camera->getModelType() == cammod::CameraModelType::SphericalPovRay)
     {
         return;
     }
@@ -110,7 +110,7 @@ TYPED_TEST(PolymorphicCameraModelTests, TestInverseForward)
             typename ModelT::PixelT pix((typename ModelT::Scalar)x, (typename ModelT::Scalar)y), pix_out;
             
             // fisheye is not valid outside of the active image area - check pixelValidCircular
-            if(!((camera->getModelType() == camera::CameraModelType::Fisheye) || (camera->getModelType() == camera::CameraModelType::IdealFisheye)) || ( camera->pixelValidCircular(pix) ) )
+            if(!((camera->getModelType() == cammod::CameraModelType::Fisheye) || (camera->getModelType() == cammod::CameraModelType::Fisheye)) || ( camera->pixelValidCircular(pix) ) )
             {
                 typename ModelT::PointT pt;
                 const typename ModelT::Scalar distance = 1.5;

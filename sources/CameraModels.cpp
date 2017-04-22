@@ -29,10 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * ****************************************************************************
- * Spherical Panorama camera model as in PovRay.
+ * Just a compile unit to check some syntax.
  * ****************************************************************************
  */
 
-#include <CameraModelHelpers.hpp>
-#include <CameraPyramid.hpp>
-#include <OpenGLProjectionMatrix.hpp>
+#include <iostream>
+#include <CameraModels/CameraModels.hpp>
+#include <CameraModels/CameraPyramid.hpp>
+#include <CameraModels/OpenGLProjectionMatrix.hpp>

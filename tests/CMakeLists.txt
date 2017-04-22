@@ -46,9 +46,10 @@ include_directories(.)
 # ----------------------------------------------------------------------
 set(TEST_SOURCES
 tests_main.cpp
-UT_CameraModels.cpp
-UT_PolymorphicCameraModels.cpp
-UT_CameraPyramid.cpp
+#UT_CameraModels.cpp
+#UT_PolymorphicCameraModels.cpp
+#UT_CameraPyramid.cpp
+UT_Jacobians.cpp
 )
 
 # --------------------------------------------------

@@ -29,23 +29,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  * ****************************************************************************
- * Ideal Pinhole Camera model with inverse in distance.
+ * Ideal Pinhole Camera model with inverse in image planes.
  * ****************************************************************************
  */
 
-#ifndef PINHOLE_CAMERA_MODEL_HPP
-#define PINHOLE_CAMERA_MODEL_HPP
+#ifndef PINHOLE_DISPARITY_CAMERA_MODEL_HPP
+#define PINHOLE_DISPARITY_CAMERA_MODEL_HPP
 
-#include <CameraModelHelpers.hpp>
+#include <CameraModels/CameraModelUtils.hpp>
 
 // fwd
-namespace camera 
+namespace cammod 
 {
-template<typename _Scalar, int _Options = 0> class PinholeCameraModel;
+template<typename _Scalar, int _Options = 0> class PinholeDisparity;
 
 namespace internal
 {
-static constexpr unsigned int PinholeModelParameterCount = 6;
+static constexpr unsigned int PinholeDisparityModelParameterCount = 6;
 }
 }
 
@@ -55,35 +55,42 @@ namespace Eigen
     namespace internal 
     {
         template<typename _Scalar, int _Options>
-        struct traits<camera::PinholeCameraModel<_Scalar,_Options> > 
+        struct traits<cammod::PinholeDisparity<_Scalar,_Options> > 
         {
             typedef _Scalar Scalar;
-            typedef Matrix<Scalar,camera::internal::PinholeModelParameterCount,1> ComplexType;
+            typedef Matrix<Scalar,cammod::internal::PinholeDisparityModelParameterCount,1> ComplexType;
+            static constexpr unsigned int NumParameters = cammod::internal::PinholeDisparityModelParameterCount;
+            static constexpr unsigned int ParametersToOptimize = NumParameters - 2;
+            static constexpr bool CalibrationSupported = true;
+            static constexpr bool HasForwardPointJacobian = true;
+            static constexpr bool HasForwardParametersJacobian = true;
+            static constexpr bool HasInversePointJacobian = false;
+            static constexpr bool HasInverseParametersJacobian = false;
         };
         
         template<typename _Scalar, int _Options>
-        struct traits<Map<camera::PinholeCameraModel<_Scalar>, _Options> > : traits<camera::PinholeCameraModel<_Scalar, _Options> > 
+        struct traits<Map<cammod::PinholeDisparity<_Scalar>, _Options> > : traits<cammod::PinholeDisparity<_Scalar, _Options> > 
         {
             typedef _Scalar Scalar;
-            typedef Map<Matrix<Scalar,camera::internal::PinholeModelParameterCount,1>,_Options> ComplexType;
+            typedef Map<Matrix<Scalar,cammod::internal::PinholeDisparityModelParameterCount,1>,_Options> ComplexType;
         };
         
         template<typename _Scalar, int _Options>
-        struct traits<Map<const camera::PinholeCameraModel<_Scalar>, _Options> > : traits<const camera::PinholeCameraModel<_Scalar, _Options> > 
+        struct traits<Map<const cammod::PinholeDisparity<_Scalar>, _Options> > : traits<const cammod::PinholeDisparity<_Scalar, _Options> > 
         {
             typedef _Scalar Scalar;
-            typedef Map<const Matrix<Scalar,camera::internal::PinholeModelParameterCount,1>,_Options> ComplexType;
+            typedef Map<const Matrix<Scalar,cammod::internal::PinholeDisparityModelParameterCount,1>,_Options> ComplexType;
         };    
     }
 }
 
-namespace camera
+namespace cammod
 {
 /**
- * Pinhole Camera Model, Model Specific Functions.
+ * Pinhole Disparity Camera Model, Model Specific Functions.
  */
 template<typename Derived>
-class PinholeCameraModelBase : public CameraFunctions<Derived>, public ComplexTypes<typename Eigen::internal::traits<Derived>::Scalar>
+class PinholeDisparityBase : public CameraFunctions<Derived>, public ComplexTypes<typename Eigen::internal::traits<Derived>::Scalar>
 {
     typedef CameraFunctions<Derived> FunctionsBase;
 public:
@@ -91,46 +98,52 @@ public:
     typedef typename Eigen::internal::traits<Derived>::Scalar Scalar;
     typedef typename Eigen::internal::traits<Derived>::ComplexType& ComplexReference;
     typedef const typename Eigen::internal::traits<Derived>::ComplexType& ConstComplexReference;
-    static constexpr CameraModelType ModelType = CameraModelType::Pinhole;
+    static constexpr CameraModelType ModelType = CameraModelType::PinholeDisparity;
     
     using FunctionsBase::forward;
     using FunctionsBase::inverse;
+    using FunctionsBase::inverseAtDistance;
+    using FunctionsBase::forwardPointJacobian;
+    using FunctionsBase::forwardParametersJacobian;
     using FunctionsBase::twoFrameProject;
     using FunctionsBase::worldToCamera;
     using FunctionsBase::cameraToWorld;
+    using FunctionsBase::pointValid;
     using FunctionsBase::pixelValid;
     using FunctionsBase::pixelValidSquare;
     using FunctionsBase::pixelValidCircular;
     using FunctionsBase::resizeViewport;
     
     template<typename NewScalarType>
-    EIGEN_DEVICE_FUNC inline PinholeCameraModel<NewScalarType> cast() const { return PinholeCameraModel<NewScalarType>(access().template cast<NewScalarType>()); }
+    EIGEN_DEVICE_FUNC inline PinholeDisparity<NewScalarType> cast() const { return PinholeDisparity<NewScalarType>(access().template cast<NewScalarType>()); }
     
     template<typename OtherDerived> 
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE PinholeCameraModelBase<Derived>& operator=(const PinholeCameraModelBase<OtherDerived> & other) { access_nonconst() = other.access(); return *this; }
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE PinholeDisparityBase<Derived>& operator=(const PinholeDisparityBase<OtherDerived> & other) { access_nonconst() = other.access(); return *this; }
     
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const  { return static_cast<const Derived*>(this)->access(); }
 private:
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ComplexReference access_nonconst()  { return static_cast<Derived*>(this)->access_nonconst(); }
 public:
-        
-    static constexpr unsigned int NumParameters = camera::internal::PinholeModelParameterCount;
-    static constexpr unsigned int ParametersToOptimize = NumParameters - 2;
-    static constexpr bool CalibrationSupported = true;
+    static constexpr unsigned int NumParameters = Eigen::internal::traits<Derived>::NumParameters;
+    static constexpr unsigned int ParametersToOptimize = Eigen::internal::traits<Derived>::ParametersToOptimize;
+    static constexpr bool CalibrationSupported = Eigen::internal::traits<Derived>::CalibrationSupported;
+    static constexpr bool HasForwardPointJacobian = Eigen::internal::traits<Derived>::HasForwardPointJacobian;
+    static constexpr bool HasForwardParametersJacobian = Eigen::internal::traits<Derived>::HasForwardParametersJacobian;
+    static constexpr bool HasInversePointJacobian = Eigen::internal::traits<Derived>::HasInversePointJacobian;
+    static constexpr bool HasInverseParametersJacobian = Eigen::internal::traits<Derived>::HasInverseParametersJacobian;
+    
+    template<typename T = Scalar>
+    using ForwardParametersJacobianT = typename ComplexTypes<T>::template ForwardParametersJacobianT<ParametersToOptimize>;
     
     template<typename T = Scalar>
     static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PointT inverse(const Derived& ccd, T x, T y) 
     {
         typename ComplexTypes<T>::PointT ret;
+
+        ret(0) = (x - ccd.u0())/ccd.fx();
+        ret(1) = (y - ccd.v0())/ccd.fy();
+        ret(2) = T(1.0);
         
-        const T xx = (x - ccd.u0())/ccd.fx();
-        const T yy = (y - ccd.v0())/ccd.fy();
-        const T z =  T(1.0) / sqrt(xx*xx + yy*yy + T(1.0) );
-
-        ret(0) = xx*z;
-        ret(1) = yy*z;
-        ret(2) = z;
-
         return ret;
     }
     
@@ -143,6 +156,48 @@ public:
         ret(1) = (ccd.fy() * tmp_pt(1))/tmp_pt(2) + ccd.v0();
         
         return ret;
+    }
+    
+    template<typename T = Scalar>
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::ForwardPointJacobianT forwardPointJacobian(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt)
+    {
+        typename ComplexTypes<T>::ForwardPointJacobianT ret = ComplexTypes<T>::ForwardPointJacobianT::Zero();
+        
+        const T z2 = tmp_pt(2) * tmp_pt(2);
+        
+        // fwd-x / d{x,y,z}
+        ret(0,0) = ccd.fx() / tmp_pt(2);
+        ret(0,2) = -(ccd.fx() * tmp_pt(0))/z2;
+        
+        // fwd-y / d{x,y,z}
+        ret(1,1) = ccd.fy() / tmp_pt(2);
+        ret(1,2) = -(ccd.fy() * tmp_pt(1))/z2;
+        
+        return ret;
+    }
+    
+    template<typename T = Scalar>
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ForwardParametersJacobianT<T> forwardParametersJacobian(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt)
+    {
+        ForwardParametersJacobianT<T> ret = ForwardParametersJacobianT<T>::Zero();
+        
+        // fwd-x / d{fx,fy,u0,v0}
+        ret(0,0) = tmp_pt(0) / tmp_pt(2);
+        ret(0,2) = T(1.0);
+        
+        // fwd-y / d{fx,fy,u0,v0}
+        ret(1,1) = tmp_pt(1) / tmp_pt(2);
+        ret(1,3) = T(1.0);
+        
+        return ret;
+    }
+    
+    template<typename T = Scalar>
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE bool pointValid(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt)
+    {
+        using Eigen::numext::abs;
+        // don't divide by zero
+        return abs(tmp_pt(2)) > Eigen::NumTraits<T>::epsilon();
     }
     
     template<typename T = Scalar>
@@ -185,7 +240,6 @@ public:
     template<typename T = Scalar>
     static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void resizeViewport(Derived& ccd, const T& new_width, const T& new_height)
     {
-        using std::min;
         const T x_ratio = new_width / ccd.width();
         const T y_ratio = new_height / ccd.height();
         
@@ -230,35 +284,35 @@ public:
 };
 
 /**
- * Pinhole Camera Model, Eigen storage.
+ * Pinhole Disparity Camera Model, Eigen storage.
  */
 template<typename _Scalar, int _Options>
-class PinholeCameraModel : public PinholeCameraModelBase<PinholeCameraModel<_Scalar, _Options>>
+class PinholeDisparity : public PinholeDisparityBase<PinholeDisparity<_Scalar, _Options>>
 {
-    typedef PinholeCameraModelBase<PinholeCameraModel<_Scalar, _Options>> Base;
+    typedef PinholeDisparityBase<PinholeDisparity<_Scalar, _Options>> Base;
 public:
-    typedef typename Eigen::internal::traits<PinholeCameraModel<_Scalar,_Options> >::Scalar Scalar;
-    typedef typename Eigen::internal::traits<PinholeCameraModel<_Scalar,_Options> >::ComplexType& ComplexReference;
-    typedef const typename Eigen::internal::traits<PinholeCameraModel<_Scalar,_Options> >::ComplexType& ConstComplexReference;
+    typedef typename Eigen::internal::traits<PinholeDisparity<_Scalar,_Options> >::Scalar Scalar;
+    typedef typename Eigen::internal::traits<PinholeDisparity<_Scalar,_Options> >::ComplexType& ComplexReference;
+    typedef const typename Eigen::internal::traits<PinholeDisparity<_Scalar,_Options> >::ComplexType& ConstComplexReference;
     
-    template<class OtherT> using GetOtherType = PinholeCameraModel<OtherT, _Options>;
+    template<class OtherT> using GetOtherType = PinholeDisparity<OtherT, _Options>;
     
     static constexpr unsigned int NumParameters = Base::NumParameters;
     static constexpr unsigned int ParametersToOptimize = Base::ParametersToOptimize;
     static constexpr bool CalibrationSupported = Base::CalibrationSupported;
     
-    friend class PinholeCameraModelBase<PinholeCameraModel<_Scalar, _Options>>;
+    friend class PinholeDisparityBase<PinholeDisparity<_Scalar, _Options>>;
     
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
-    EIGEN_DEVICE_FUNC inline PinholeCameraModel(Scalar fx, Scalar fy, Scalar u0, Scalar v0, Scalar w = 0.0, Scalar h = 0.0)
+    EIGEN_DEVICE_FUNC inline PinholeDisparity(Scalar fx, Scalar fy, Scalar u0, Scalar v0, Scalar w = 0.0, Scalar h = 0.0)
     {
         parameters << fx , fy , u0 , v0 , w , h;
     }
-    EIGEN_DEVICE_FUNC inline PinholeCameraModel() : parameters(Eigen::Matrix<Scalar,NumParameters,1>::Zero()) { }
-    EIGEN_DEVICE_FUNC inline PinholeCameraModel(const typename Eigen::internal::traits<PinholeCameraModel<_Scalar,_Options> >::ComplexType& vec) : parameters(vec) { }
+    EIGEN_DEVICE_FUNC inline PinholeDisparity() : parameters(Eigen::Matrix<Scalar,NumParameters,1>::Zero()) { }
+    EIGEN_DEVICE_FUNC inline PinholeDisparity(const typename Eigen::internal::traits<PinholeDisparity<_Scalar,_Options> >::ComplexType& vec) : parameters(vec) { }
     
-    EIGEN_DEVICE_FUNC inline PinholeCameraModel& operator=(const typename Eigen::internal::traits<PinholeCameraModel<_Scalar,_Options> >::ComplexType& vec) { access_nonconst() = vec; return *this; }
+    EIGEN_DEVICE_FUNC inline PinholeDisparity& operator=(const typename Eigen::internal::traits<PinholeDisparity<_Scalar,_Options> >::ComplexType& vec) { access_nonconst() = vec; return *this; }
     
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const { return parameters; }
 protected:
@@ -267,9 +321,9 @@ protected:
 };
 
 template<typename T>
-inline std::ostream& operator<<(std::ostream& os, const PinholeCameraModel<T>& p)
+inline std::ostream& operator<<(std::ostream& os, const PinholeDisparity<T>& p)
 {
-    os << "PinholeCamera(fx = " << p.fx() << ", fy = " << p.fy() << ", u0 = " << p.u0() << ", v0 = " << p.v0() << "," << p.width() << " x " << p.height() << ")";
+    os << "PinholeDisparity(fx = " << p.fx() << ", fy = " << p.fy() << ", u0 = " << p.u0() << ", v0 = " << p.v0() << "," << p.width() << " x " << p.height() << ")";
     return os;
 }
 
@@ -278,12 +332,12 @@ inline std::ostream& operator<<(std::ostream& os, const PinholeCameraModel<T>& p
 namespace Eigen 
 {
 /**
- * Pinhole Camera Model, Eigen Map.
+ * Pinhole Disparity Camera Model, Eigen Map.
  */
 template<typename _Scalar, int _Options>
-class Map<camera::PinholeCameraModel<_Scalar>, _Options> : public camera::PinholeCameraModelBase<Map<camera::PinholeCameraModel<_Scalar>, _Options>>
+class Map<cammod::PinholeDisparity<_Scalar>, _Options> : public cammod::PinholeDisparityBase<Map<cammod::PinholeDisparity<_Scalar>, _Options>>
 {
-    typedef camera::PinholeCameraModelBase<Map<camera::PinholeCameraModel<_Scalar>, _Options>> Base;
+    typedef cammod::PinholeDisparityBase<Map<cammod::PinholeDisparity<_Scalar>, _Options>> Base;
     
 public:
     typedef typename internal::traits<Map>::Scalar Scalar;
@@ -294,7 +348,7 @@ public:
     static constexpr unsigned int ParametersToOptimize = Base::ParametersToOptimize;
     static constexpr bool CalibrationSupported = Base::CalibrationSupported;
     
-    friend class camera::PinholeCameraModelBase<Map<camera::PinholeCameraModel<_Scalar>, _Options>>;
+    friend class cammod::PinholeDisparityBase<Map<cammod::PinholeDisparity<_Scalar>, _Options>>;
     
     EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Map)
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Map(Scalar* coeffs) : parameters(coeffs)  { }
@@ -306,12 +360,12 @@ protected:
 };
 
 /**
- * Pinhole Camera Model, Eigen Map const.
+ * Pinhole Disparity Camera Model, Eigen Map const.
  */
 template<typename _Scalar, int _Options>
-class Map<const camera::PinholeCameraModel<_Scalar>, _Options> : public camera::PinholeCameraModelBase<Map<const camera::PinholeCameraModel<_Scalar>, _Options>>
+class Map<const cammod::PinholeDisparity<_Scalar>, _Options> : public cammod::PinholeDisparityBase<Map<const cammod::PinholeDisparity<_Scalar>, _Options>>
 {
-    typedef camera::PinholeCameraModelBase<Map<const camera::PinholeCameraModel<_Scalar>, _Options>> Base;
+    typedef cammod::PinholeDisparityBase<Map<const cammod::PinholeDisparity<_Scalar>, _Options>> Base;
 public:
     typedef typename internal::traits<Map>::Scalar Scalar;
     typedef const typename internal::traits<Map>::ComplexType & ConstComplexReference;
@@ -328,4 +382,4 @@ protected:
 };
 }
     
-#endif // PINHOLE_CAMERA_MODEL_HPP
+    #endif // PINHOLE_DISPARITY_CAMERA_MODEL_HPP
