@@ -49,7 +49,7 @@ static constexpr unsigned int SphericalModelParameterCount = 4;
 }
 }
 
-// Eigen Traits 
+// Eigen Traits, but also some traits for our use
 namespace Eigen 
 {
     namespace internal 
@@ -69,14 +69,16 @@ namespace Eigen
         };
         
         template<typename _Scalar, int _Options>
-        struct traits<Map<cammod::Spherical<_Scalar>, _Options> > : traits<cammod::Spherical<_Scalar, _Options> > 
+        struct traits<Map<cammod::Spherical<_Scalar>, _Options> >
+            : traits<cammod::Spherical<_Scalar, _Options> > 
         {
             typedef _Scalar Scalar;
             typedef Map<Matrix<Scalar,cammod::internal::SphericalModelParameterCount,1>,_Options> ComplexType;
         };
         
         template<typename _Scalar, int _Options>
-        struct traits<Map<const cammod::Spherical<_Scalar>, _Options> > : traits<const cammod::Spherical<_Scalar, _Options> > 
+        struct traits<Map<const cammod::Spherical<_Scalar>, _Options> >
+            : traits<const cammod::Spherical<_Scalar, _Options> > 
         {
             typedef _Scalar Scalar;
             typedef Map<const Matrix<Scalar,cammod::internal::SphericalModelParameterCount,1>,_Options> ComplexType;
@@ -90,7 +92,8 @@ namespace cammod
  * Spherical Camera Model, Model Specific Functions.
  */
 template<typename Derived>
-class SphericalBase : public CameraFunctions<Derived>, public ComplexTypes<typename Eigen::internal::traits<Derived>::Scalar>
+class SphericalBase : public CameraFunctions<Derived>, 
+                      public ComplexTypes<typename Eigen::internal::traits<Derived>::Scalar>
 {
     typedef CameraFunctions<Derived> FunctionsBase;
 public:
@@ -113,14 +116,28 @@ public:
     using FunctionsBase::resizeViewport;
     
     template<typename NewScalarType>
-    EIGEN_DEVICE_FUNC inline Spherical<NewScalarType> cast() const { return Spherical<NewScalarType>(access().template cast<NewScalarType>()); }
+    EIGEN_DEVICE_FUNC inline Spherical<NewScalarType> cast() const 
+    { 
+        return Spherical<NewScalarType>(access().template cast<NewScalarType>()); 
+    }
     
     template<typename OtherDerived> 
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE SphericalBase<Derived>& operator=(const SphericalBase<OtherDerived> & other) { access_nonconst() = other.access(); return *this; }
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE SphericalBase<Derived>& 
+        operator=(const SphericalBase<OtherDerived> & other) 
+    { 
+        access_nonconst() = other.access(); 
+        return *this; 
+    }
     
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const  { return static_cast<const Derived*>(this)->access(); }
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const 
+    { 
+        return static_cast<const Derived*>(this)->access(); 
+    }
 private:
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ComplexReference access_nonconst()  { return static_cast<Derived*>(this)->access_nonconst(); }
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ComplexReference access_nonconst() 
+    {
+        return static_cast<Derived*>(this)->access_nonconst(); 
+    }
 public:
     static constexpr unsigned int NumParameters = Eigen::internal::traits<Derived>::NumParameters;
     static constexpr unsigned int ParametersToOptimize = Eigen::internal::traits<Derived>::ParametersToOptimize;
@@ -131,7 +148,8 @@ public:
     static constexpr bool HasInverseParametersJacobian = Eigen::internal::traits<Derived>::HasInverseParametersJacobian;
     
     template<typename T = Scalar>
-    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PointT inverse(const Derived& ccd, T x, T y) 
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PointT 
+        inverse(const Derived& ccd, T x, T y) 
     {
         using Eigen::numext::sin;
         using Eigen::numext::cos;
@@ -151,7 +169,8 @@ public:
     }
     
     template<typename T = Scalar>
-    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PixelT forward(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt) 
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PixelT 
+        forward(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt) 
     {
         using Eigen::numext::sqrt;
         using Eigen::numext::acos;
@@ -257,9 +276,19 @@ public:
     }
     
     inline Spherical() : parameters(Eigen::Matrix<Scalar,NumParameters,1>::Zero()) { }
-    EIGEN_DEVICE_FUNC inline Spherical(const typename Eigen::internal::traits<Spherical<_Scalar,_Options> >::ComplexType& vec) : parameters(vec) { }
     
-    EIGEN_DEVICE_FUNC inline Spherical& operator=(const typename Eigen::internal::traits<Spherical<_Scalar,_Options> >::ComplexType& vec) { access_nonconst() = vec; return *this; }
+    EIGEN_DEVICE_FUNC inline Spherical(const typename Eigen::internal::traits<Spherical<_Scalar,_Options> >::ComplexType& vec)
+      : parameters(vec) 
+    { 
+      
+    }
+    
+    EIGEN_DEVICE_FUNC inline Spherical& 
+        operator=(const typename Eigen::internal::traits<Spherical<_Scalar,_Options> >::ComplexType& vec) 
+    { 
+        access_nonconst() = vec; 
+        return *this; 
+    }
     
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const { return parameters; }
 protected:
@@ -270,7 +299,8 @@ protected:
 template<typename T>
 inline std::ostream& operator<<(std::ostream& os, const Spherical<T>& p)
 {
-    os << "Spherical(width = " << p.width() << ", height = " << p.height() << ", min_angle = " << p.min_angle() << ", max_angle = " << p.max_angle() << ")";
+    os << "Spherical(width = " << p.width() << ", height = " << p.height() 
+       << ", min_angle = " << p.min_angle() << ", max_angle = " << p.max_angle() << ")";
     return os;
 }
 
@@ -278,53 +308,56 @@ inline std::ostream& operator<<(std::ostream& os, const Spherical<T>& p)
 
 namespace Eigen 
 {
-    /**
-     * Spherical Camera Model, Eigen Map.
-     */
-    template<typename _Scalar, int _Options>
-    class Map<cammod::Spherical<_Scalar>, _Options> : public cammod::SphericalBase<Map<cammod::Spherical<_Scalar>, _Options>>
-    {
-        typedef cammod::SphericalBase<Map<cammod::Spherical<_Scalar>, _Options>> Base;
-        
-    public:
-        typedef typename internal::traits<Map>::Scalar Scalar;
-        typedef typename internal::traits<Map>::ComplexType& ComplexReference;
-        typedef const typename internal::traits<Map>::ComplexType& ConstComplexReference;
-        
-        static constexpr unsigned int NumParameters = Base::NumParameters;
-        static constexpr bool CalibrationSupported = Base::CalibrationSupported;
-        
-        friend class cammod::SphericalBase<Map<cammod::Spherical<_Scalar>, _Options>>;
-        
-        EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Map)
-        EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Map(Scalar* coeffs) : parameters(coeffs)  { }
-        EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const { return parameters; }
-    protected:
-        EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ComplexReference access_nonconst() { return parameters; }
-        
-        Map<Matrix<Scalar,NumParameters,1>,_Options> parameters;
-    };
+/**
+  * Spherical Camera Model, Eigen Map.
+  */
+template<typename _Scalar, int _Options>
+class Map<cammod::Spherical<_Scalar>, _Options>
+    : public cammod::SphericalBase<Map<cammod::Spherical<_Scalar>, _Options>>
+{
+    typedef cammod::SphericalBase<Map<cammod::Spherical<_Scalar>, _Options>> Base;
     
-    /**
-     * Spherical Camera Model, Eigen Map const.
-     */
-    template<typename _Scalar, int _Options>
-    class Map<const cammod::Spherical<_Scalar>, _Options> : public cammod::SphericalBase<Map<const cammod::Spherical<_Scalar>, _Options>>
-    {
-        typedef cammod::SphericalBase<Map<const cammod::Spherical<_Scalar>, _Options>> Base;
-    public:
-        typedef typename internal::traits<Map>::Scalar Scalar;
-        typedef const typename internal::traits<Map>::ComplexType & ConstComplexReference;
-        
-        static constexpr unsigned int NumParameters = Base::NumParameters;
-        static constexpr bool CalibrationSupported = Base::CalibrationSupported;
-        
-        EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Map)
-        EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Map(const Scalar* coeffs) : parameters(coeffs) { }
-        EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const  { return parameters; }
-    protected:
-        const Map<const Matrix<Scalar,NumParameters,1>,_Options> parameters;
-    };
+public:
+    typedef typename internal::traits<Map>::Scalar Scalar;
+    typedef typename internal::traits<Map>::ComplexType& ComplexReference;
+    typedef const typename internal::traits<Map>::ComplexType& ConstComplexReference;
+    
+    static constexpr unsigned int NumParameters = Base::NumParameters;
+    static constexpr bool CalibrationSupported = Base::CalibrationSupported;
+    
+    friend class cammod::SphericalBase<Map<cammod::Spherical<_Scalar>, _Options>>;
+    
+    EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Map)
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Map(Scalar* coeffs) : parameters(coeffs)  { }
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const { return parameters; }
+protected:
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ComplexReference access_nonconst() { return parameters; }
+    
+    Map<Matrix<Scalar,NumParameters,1>,_Options> parameters;
+};
+
+/**
+  * Spherical Camera Model, Eigen Map const.
+  */
+template<typename _Scalar, int _Options>
+class Map<const cammod::Spherical<_Scalar>, _Options>
+    : public cammod::SphericalBase<Map<const cammod::Spherical<_Scalar>, _Options>>
+{
+    typedef cammod::SphericalBase<Map<const cammod::Spherical<_Scalar>, _Options>> Base;
+public:
+    typedef typename internal::traits<Map>::Scalar Scalar;
+    typedef const typename internal::traits<Map>::ComplexType & ConstComplexReference;
+    
+    static constexpr unsigned int NumParameters = Base::NumParameters;
+    static constexpr bool CalibrationSupported = Base::CalibrationSupported;
+    
+    EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Map)
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Map(const Scalar* coeffs) : parameters(coeffs) { }
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const  { return parameters; }
+protected:
+    const Map<const Matrix<Scalar,NumParameters,1>,_Options> parameters;
+};
+
 }
     
 #endif // SPHERICAL_CAMERA_MODEL_HPP

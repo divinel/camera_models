@@ -73,14 +73,16 @@ namespace Eigen
         };
         
         template<typename _Scalar, int _Options>
-        struct traits<Map<cammod::PinholeDisparityBrownConrady<_Scalar>, _Options> > : traits<cammod::PinholeDisparityBrownConrady<_Scalar, _Options> > 
+        struct traits<Map<cammod::PinholeDisparityBrownConrady<_Scalar>, _Options> >
+            : traits<cammod::PinholeDisparityBrownConrady<_Scalar, _Options> > 
         {
             typedef _Scalar Scalar;
             typedef Map<Matrix<Scalar,cammod::internal::PinholeDisparityBrownConradyParameterCount,1>,_Options> ComplexType;
         };
         
         template<typename _Scalar, int _Options>
-        struct traits<Map<const cammod::PinholeDisparityBrownConrady<_Scalar>, _Options> > : traits<const cammod::PinholeDisparityBrownConrady<_Scalar, _Options> > 
+        struct traits<Map<const cammod::PinholeDisparityBrownConrady<_Scalar>, _Options> >
+            : traits<const cammod::PinholeDisparityBrownConrady<_Scalar, _Options> > 
         {
             typedef _Scalar Scalar;
             typedef Map<const Matrix<Scalar,cammod::internal::PinholeDisparityBrownConradyParameterCount,1>,_Options> ComplexType;
@@ -94,7 +96,8 @@ namespace cammod
  * PinholeDisparityBrownConradyBase, Model Specific Functions.
  */
 template<typename Derived>
-class PinholeDisparityBrownConradyBase : public CameraFunctions<Derived>, public ComplexTypes<typename Eigen::internal::traits<Derived>::Scalar>
+class PinholeDisparityBrownConradyBase : public CameraFunctions<Derived>, 
+                                         public ComplexTypes<typename Eigen::internal::traits<Derived>::Scalar>
 {
     typedef CameraFunctions<Derived> FunctionsBase;
 public:
@@ -117,14 +120,28 @@ public:
     using FunctionsBase::resizeViewport;
     
     template<typename NewScalarType>
-    EIGEN_DEVICE_FUNC inline PinholeDisparityBrownConrady<NewScalarType> cast() const { return PinholeDisparityBrownConrady<NewScalarType>(access().template cast<NewScalarType>()); }
+    EIGEN_DEVICE_FUNC inline PinholeDisparityBrownConrady<NewScalarType> cast() const 
+    { 
+        return PinholeDisparityBrownConrady<NewScalarType>(access().template cast<NewScalarType>()); 
+    }
     
     template<typename OtherDerived> 
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE PinholeDisparityBrownConradyBase<Derived>& operator=(const PinholeDisparityBrownConradyBase<OtherDerived> & other) { access_nonconst() = other.access(); return *this; }
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE PinholeDisparityBrownConradyBase<Derived>& 
+        operator=(const PinholeDisparityBrownConradyBase<OtherDerived> & other) 
+    { 
+        access_nonconst() = other.access(); 
+        return *this; 
+    }
     
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const  { return static_cast<const Derived*>(this)->access(); }
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const 
+    { 
+        return static_cast<const Derived*>(this)->access(); 
+    }
 private:
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ComplexReference access_nonconst()  { return static_cast<Derived*>(this)->access_nonconst(); }
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ComplexReference access_nonconst() 
+    {   
+        return static_cast<Derived*>(this)->access_nonconst(); 
+    }
 public:
     static constexpr unsigned int NumParameters = Eigen::internal::traits<Derived>::NumParameters;
     static constexpr unsigned int ParametersToOptimize = Eigen::internal::traits<Derived>::ParametersToOptimize;
@@ -135,12 +152,14 @@ public:
     static constexpr bool HasInverseParametersJacobian = Eigen::internal::traits<Derived>::HasInverseParametersJacobian;
     
     template<typename T = Scalar>
-    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PointT inverse(const Derived& ccd, T pixx, T pixy) 
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PointT 
+        inverse(const Derived& ccd, T pixx, T pixy) 
     {
         typename ComplexTypes<T>::PointT ret;
         
         // to image plane
-        const T x = (ccd.fx() * ccd.skew() * ccd.v0() - ccd.fy() * ccd.u0())/(ccd.fx() * ccd.fy()) - (pixy * ccd.skew())/ccd.fy() + pixx / ccd.fx();
+        const T x = (ccd.fx() * ccd.skew() * ccd.v0() - ccd.fy() * ccd.u0()) / 
+                    (ccd.fx() * ccd.fy()) - (pixy * ccd.skew())/ccd.fy() + pixx / ccd.fx();
         const T y = (pixy - ccd.v0()) / ccd.fy();
 
         const T r2  = x * x + y * y;
@@ -158,7 +177,8 @@ public:
     }
     
     template<typename T = Scalar>
-    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PixelT forward(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt) 
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PixelT 
+        forward(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt) 
     {
         typename ComplexTypes<T>::PixelT ret;
         
@@ -301,15 +321,27 @@ public:
     
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
-    EIGEN_DEVICE_FUNC inline PinholeDisparityBrownConrady(Scalar fx, Scalar fy, Scalar u0, Scalar v0, Scalar k1 = 0.0, Scalar k2 = 0.0, Scalar k3 = 0.0, Scalar p1 = 0.0, Scalar p2 = 0.0, Scalar skew = 0.0, Scalar w = 0.0, Scalar h = 0.0)
+    EIGEN_DEVICE_FUNC inline PinholeDisparityBrownConrady(Scalar fx, Scalar fy, Scalar u0, Scalar v0, 
+                                                          Scalar k1 = 0.0, Scalar k2 = 0.0, Scalar k3 = 0.0, 
+                                                          Scalar p1 = 0.0, Scalar p2 = 0.0, Scalar skew = 0.0, 
+                                                          Scalar w = 0.0, Scalar h = 0.0)
     {
         access_nonconst() << fx , fy , u0 , v0 , k1 , k2 , k3 , p1 , p2 , skew, w, h;
     }
     
     EIGEN_DEVICE_FUNC inline PinholeDisparityBrownConrady() : parameters(Eigen::Matrix<Scalar,NumParameters,1>::Zero()) { }
-    EIGEN_DEVICE_FUNC inline PinholeDisparityBrownConrady(const typename Eigen::internal::traits<PinholeDisparityBrownConrady<_Scalar,_Options> >::ComplexType& vec) : parameters(vec) { }
     
-    EIGEN_DEVICE_FUNC inline PinholeDisparityBrownConrady& operator=(const typename Eigen::internal::traits<PinholeDisparityBrownConrady<_Scalar,_Options> >::ComplexType& vec) { access_nonconst() = vec; return *this; }
+    EIGEN_DEVICE_FUNC inline PinholeDisparityBrownConrady(const typename Eigen::internal::traits<PinholeDisparityBrownConrady<_Scalar,_Options> >::ComplexType& vec) : parameters(vec) 
+    {
+      
+    }
+    
+    EIGEN_DEVICE_FUNC inline PinholeDisparityBrownConrady& 
+        operator=(const typename Eigen::internal::traits<PinholeDisparityBrownConrady<_Scalar,_Options> >::ComplexType& vec) 
+    { 
+        access_nonconst() = vec; 
+        return *this; 
+    }
     
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const { return parameters; }
 protected:
@@ -320,7 +352,10 @@ protected:
 template<typename T>
 inline std::ostream& operator<<(std::ostream& os, const PinholeDisparityBrownConrady<T>& p)
 {
-    os << "PinholeDisparityBrownConrady(fx = " << p.fx() << ", fy = " << p.fy() << ", u0 = " << p.u0() << ", v0 = " << p.v0() << ", k1 = " << p.k1() << ", k2 = " << p.k2() << ", k3 = " << p.k3() << ", p1 = " << p.p1() << ", p2 = " << p.p2() << ", s = " << p.skew() << "," << p.width() << " x " << p.height() << ")";
+    os << "PinholeDisparityBrownConrady(fx = " << p.fx() << ", fy = " << p.fy() << ", u0 = " << p.u0() << ", v0 = " << p.v0() 
+       << ", k1 = " << p.k1() << ", k2 = " << p.k2() << ", k3 = " << p.k3() 
+       << ", p1 = " << p.p1() << ", p2 = " << p.p2() << ", s = " << p.skew() 
+       << "," << p.width() << " x " << p.height() << ")";
     return os;
 }
 
@@ -332,7 +367,8 @@ namespace Eigen
  * PinholeDisparityBrownConrady, Eigen Map.
  */
 template<typename _Scalar, int _Options>
-class Map<cammod::PinholeDisparityBrownConrady<_Scalar>, _Options> : public cammod::PinholeDisparityBrownConradyBase<Map<cammod::PinholeDisparityBrownConrady<_Scalar>, _Options>>
+class Map<cammod::PinholeDisparityBrownConrady<_Scalar>, _Options>
+    : public cammod::PinholeDisparityBrownConradyBase<Map<cammod::PinholeDisparityBrownConrady<_Scalar>, _Options>>
 {
     typedef cammod::PinholeDisparityBrownConradyBase<Map<cammod::PinholeDisparityBrownConrady<_Scalar>, _Options>> Base;
     
@@ -360,7 +396,8 @@ protected:
  * PinholeDisparityBrownConrady, Eigen Map const.
  */
 template<typename _Scalar, int _Options>
-class Map<const cammod::PinholeDisparityBrownConrady<_Scalar>, _Options> : public cammod::PinholeDisparityBrownConradyBase<Map<const cammod::PinholeDisparityBrownConrady<_Scalar>, _Options>>
+class Map<const cammod::PinholeDisparityBrownConrady<_Scalar>, _Options>
+    : public cammod::PinholeDisparityBrownConradyBase<Map<const cammod::PinholeDisparityBrownConrady<_Scalar>, _Options>>
 {
     typedef cammod::PinholeDisparityBrownConradyBase<Map<const cammod::PinholeDisparityBrownConrady<_Scalar>, _Options>> Base;
 public:
@@ -377,6 +414,7 @@ public:
 protected:
     const Map<const Matrix<Scalar,NumParameters,1>,_Options> parameters;
 };
+
 }
     
 #endif // PINHOLE_DISPARITY_BROWN_CONRADY_CAMERA_MODEL_HPP

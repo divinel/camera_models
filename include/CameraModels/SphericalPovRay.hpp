@@ -49,7 +49,7 @@ static constexpr unsigned int SphericalPovRayModelParameterCount = 4;
 }
 }
 
-// Eigen Traits 
+// Eigen Traits, but also some traits for our use
 namespace Eigen 
 {
     namespace internal 
@@ -69,14 +69,16 @@ namespace Eigen
         };
         
         template<typename _Scalar, int _Options>
-        struct traits<Map<cammod::SphericalPovRay<_Scalar>, _Options> > : traits<cammod::SphericalPovRay<_Scalar, _Options> > 
+        struct traits<Map<cammod::SphericalPovRay<_Scalar>, _Options> >
+            : traits<cammod::SphericalPovRay<_Scalar, _Options> > 
         {
             typedef _Scalar Scalar;
             typedef Map<Matrix<Scalar,cammod::internal::SphericalPovRayModelParameterCount,1>,_Options> ComplexType;
         };
         
         template<typename _Scalar, int _Options>
-        struct traits<Map<const cammod::SphericalPovRay<_Scalar>, _Options> > : traits<const cammod::SphericalPovRay<_Scalar, _Options> > 
+        struct traits<Map<const cammod::SphericalPovRay<_Scalar>, _Options> >
+            : traits<const cammod::SphericalPovRay<_Scalar, _Options> > 
         {
             typedef _Scalar Scalar;
             typedef Map<const Matrix<Scalar,cammod::internal::SphericalPovRayModelParameterCount,1>,_Options> ComplexType;
@@ -90,7 +92,8 @@ namespace cammod
  * Spherical PovRay Camera Model, Model Specific Functions.
  */
 template<typename Derived>
-class SphericalPovRayBase : public CameraFunctions<Derived>, public ComplexTypes<typename Eigen::internal::traits<Derived>::Scalar>
+class SphericalPovRayBase : public CameraFunctions<Derived>, 
+                            public ComplexTypes<typename Eigen::internal::traits<Derived>::Scalar>
 {
     typedef CameraFunctions<Derived> FunctionsBase;
 public:
@@ -113,14 +116,28 @@ public:
     using FunctionsBase::resizeViewport;
     
     template<typename NewScalarType>
-    EIGEN_DEVICE_FUNC inline SphericalPovRay<NewScalarType> cast() const { return SphericalPovRay<NewScalarType>(access().template cast<NewScalarType>()); }
+    EIGEN_DEVICE_FUNC inline SphericalPovRay<NewScalarType> cast() const 
+    { 
+        return SphericalPovRay<NewScalarType>(access().template cast<NewScalarType>()); 
+    }
     
     template<typename OtherDerived> 
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE SphericalPovRayBase<Derived>& operator=(const SphericalPovRayBase<OtherDerived> & other) { access_nonconst() = other.access(); return *this; }
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE SphericalPovRayBase<Derived>& 
+        operator=(const SphericalPovRayBase<OtherDerived> & other) 
+    { 
+        access_nonconst() = other.access(); 
+        return *this; 
+    }
     
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const  { return static_cast<const Derived*>(this)->access(); }
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const 
+    { 
+        return static_cast<const Derived*>(this)->access(); 
+    }
 private:
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ComplexReference access_nonconst()  { return static_cast<Derived*>(this)->access_nonconst(); }
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ComplexReference access_nonconst() 
+    { 
+        return static_cast<Derived*>(this)->access_nonconst(); 
+    }
 public:
     static constexpr unsigned int NumParameters = Eigen::internal::traits<Derived>::NumParameters;
     static constexpr unsigned int ParametersToOptimize = Eigen::internal::traits<Derived>::ParametersToOptimize;
@@ -131,7 +148,8 @@ public:
     static constexpr bool HasInverseParametersJacobian = Eigen::internal::traits<Derived>::HasInverseParametersJacobian;
     
     template<typename T = Scalar>
-    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PointT inverse(const Derived& ccd, T x, T y) 
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PointT 
+        inverse(const Derived& ccd, T x, T y) 
     {
         using Eigen::numext::sin;
         using Eigen::numext::cos;
@@ -150,7 +168,8 @@ public:
     }
     
     template<typename T = Scalar>
-    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PixelT forward(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt) 
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PixelT 
+        forward(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt) 
     {
         using Eigen::numext::sqrt;
         using Eigen::numext::asin;
@@ -163,7 +182,8 @@ public:
         const T angle2 = (atan2(tmp_pt(0), tmp_pt(2)) + T(M_PI));
         
         ret(0) = ccd.width() * ((angle2)/(T(2.0f * M_PI)));
-        ret(1) = (ccd.height() * angle1 - (ccd.height() * ccd.min_angle() - (ccd.max_angle() - ccd.min_angle()) )) / (ccd.max_angle() - ccd.min_angle());
+        ret(1) = (ccd.height() * angle1 - (ccd.height() * ccd.min_angle() - (ccd.max_angle() - ccd.min_angle()) )) /
+                 (ccd.max_angle() - ccd.min_angle());
         
         if(ret(0) > ccd.width() - T(1.0f))
         {
@@ -256,10 +276,21 @@ public:
     {
         access_nonconst() << w , h , min_a , max_a;
     }
-    EIGEN_DEVICE_FUNC inline SphericalPovRay() : parameters(Eigen::Matrix<Scalar,NumParameters,1>::Zero()) { }
-    EIGEN_DEVICE_FUNC inline SphericalPovRay(const typename Eigen::internal::traits<SphericalPovRay<_Scalar,_Options> >::ComplexType& vec) : parameters(vec) { }
     
-    EIGEN_DEVICE_FUNC inline SphericalPovRay& operator=(const typename Eigen::internal::traits<SphericalPovRay<_Scalar,_Options> >::ComplexType& vec) { access_nonconst() = vec; return *this; }
+    EIGEN_DEVICE_FUNC inline SphericalPovRay() : parameters(Eigen::Matrix<Scalar,NumParameters,1>::Zero()) { }
+    
+    EIGEN_DEVICE_FUNC inline SphericalPovRay(const typename Eigen::internal::traits<SphericalPovRay<_Scalar,_Options> >::ComplexType& vec)
+      : parameters(vec) 
+    { 
+      
+    }
+    
+    EIGEN_DEVICE_FUNC inline SphericalPovRay& 
+        operator=(const typename Eigen::internal::traits<SphericalPovRay<_Scalar,_Options> >::ComplexType& vec) 
+    { 
+        access_nonconst() = vec; 
+        return *this; 
+    }
     
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const { return parameters; }
 protected:
@@ -270,7 +301,8 @@ protected:
 template<typename T>
 inline std::ostream& operator<<(std::ostream& os, const SphericalPovRay<T>& p)
 {
-    os << "SphericalPovRay(width = " << p.width() << ", height = " << p.height() << ", min_angle = " << p.min_angle() << ", max_angle = " << p.max_angle() << ")";
+    os << "SphericalPovRay(width = " << p.width() << ", height = " << p.height() 
+       << ", min_angle = " << p.min_angle() << ", max_angle = " << p.max_angle() << ")";
     return os;
 }
 
@@ -282,7 +314,8 @@ namespace Eigen
  * Spherical PovRay Camera Model, Eigen Map.
  */
 template<typename _Scalar, int _Options>
-class Map<cammod::SphericalPovRay<_Scalar>, _Options> : public cammod::SphericalPovRayBase<Map<cammod::SphericalPovRay<_Scalar>, _Options>>
+class Map<cammod::SphericalPovRay<_Scalar>, _Options>
+    : public cammod::SphericalPovRayBase<Map<cammod::SphericalPovRay<_Scalar>, _Options>>
 {
     typedef cammod::SphericalPovRayBase<Map<cammod::SphericalPovRay<_Scalar>, _Options>> Base;
     
@@ -309,7 +342,8 @@ protected:
  * Spherical PovRay Camera Model, Eigen Map const.
  */
 template<typename _Scalar, int _Options>
-class Map<const cammod::SphericalPovRay<_Scalar>, _Options> : public cammod::SphericalPovRayBase<Map<const cammod::SphericalPovRay<_Scalar>, _Options>>
+class Map<const cammod::SphericalPovRay<_Scalar>, _Options>
+    : public cammod::SphericalPovRayBase<Map<const cammod::SphericalPovRay<_Scalar>, _Options>>
 {
     typedef cammod::SphericalPovRayBase<Map<const cammod::SphericalPovRay<_Scalar>, _Options>> Base;
 public:
@@ -325,6 +359,7 @@ public:
 protected:
     const Map<const Matrix<Scalar,NumParameters,1>,_Options> parameters;
 };
+
 }
     
 #endif // SPHERICAL_POVRAY_CAMERA_MODEL_HPP

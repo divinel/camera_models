@@ -67,7 +67,8 @@ cammod::PinholeDisparity<double>,
 cammod::PinholeDisparityDistorted<double>,
 cammod::Generic<double>,
 cammod::GenericDistorted<double>,
-cammod::Fisheye<double>
+cammod::Fisheye<double>,
+cammod::FisheyeDistorted<double>
 > JacobianCameraModelTypes;
 
 TYPED_TEST_CASE(JacobianCameraModelTests, JacobianCameraModelTypes);
@@ -95,9 +96,9 @@ TYPED_TEST(JacobianCameraModelTests, TestForwardPoint)
     jauto.template block<1,3>(0,0) = jpix(0).derivatives();
     jauto.template block<1,3>(1,0) = jpix(1).derivatives();
     
-    //std::cerr << "Point Jacobian Auto: " << std::endl << jauto << std::endl;
-    //std::cerr << "Point Jacobian Hardcoded: " << std::endl << jhard << std::endl;
-    //std::cerr << "Jacobian Error: " << (jauto - jhard).norm() << std::endl;
+    std::cerr << "Point Jacobian Auto: " << std::endl << jauto << std::endl;
+    std::cerr << "Point Jacobian Hardcoded: " << std::endl << jhard << std::endl;
+    std::cerr << "Jacobian Error: " << (jauto - jhard).norm() << std::endl;
     
     for(std::size_t c = 0 ; c < 3 ; ++c)
     {
@@ -138,9 +139,9 @@ TYPED_TEST(JacobianCameraModelTests, TestForwardParameters)
     jauto.template block<1,ModelT::ParametersToOptimize>(0,0) = jpix(0).derivatives();
     jauto.template block<1,ModelT::ParametersToOptimize>(1,0) = jpix(1).derivatives();
     
-    //std::cerr << "Parameters Jacobian Auto: " << std::endl << jauto << std::endl;
-    //std::cerr << "Parameters Jacobian Hardcoded: " << std::endl << jhard << std::endl;
-    //std::cerr << "Jacobian Error: " << (jauto - jhard).norm() << std::endl;
+    std::cerr << "Parameters Jacobian Auto: " << std::endl << jauto << std::endl;
+    std::cerr << "Parameters Jacobian Hardcoded: " << std::endl << jhard << std::endl;
+    std::cerr << "Jacobian Error: " << (jauto - jhard).norm() << std::endl;
     
     for(std::size_t c = 0 ; c < ModelT::ParametersToOptimize ; ++c)
     {

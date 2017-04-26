@@ -49,7 +49,7 @@ static constexpr unsigned int FisheyeParameterCount = 7;
 }
 }
 
-// Eigen Traits 
+// Eigen Traits, but also some traits for our use
 namespace Eigen 
 {
     namespace internal 
@@ -69,14 +69,16 @@ namespace Eigen
         };
         
         template<typename _Scalar, int _Options>
-        struct traits<Map<cammod::Fisheye<_Scalar>, _Options> > : traits<cammod::Fisheye<_Scalar, _Options> > 
+        struct traits<Map<cammod::Fisheye<_Scalar>, _Options> >
+            : traits<cammod::Fisheye<_Scalar, _Options> > 
         {
             typedef _Scalar Scalar;
             typedef Map<Matrix<Scalar,cammod::internal::FisheyeParameterCount,1>,_Options> ComplexType;
         };
         
         template<typename _Scalar, int _Options>
-        struct traits<Map<const cammod::Fisheye<_Scalar>, _Options> > : traits<const cammod::Fisheye<_Scalar, _Options> > 
+        struct traits<Map<const cammod::Fisheye<_Scalar>, _Options> >
+            : traits<const cammod::Fisheye<_Scalar, _Options> > 
         {
             typedef _Scalar Scalar;
             typedef Map<const Matrix<Scalar,cammod::internal::FisheyeParameterCount,1>,_Options> ComplexType;
@@ -90,7 +92,8 @@ namespace cammod
  * Fisheye Camera Model, Model Specific Functions.
  */
 template<typename Derived>
-class FisheyeBase : public CameraFunctions<Derived>, public ComplexTypes<typename Eigen::internal::traits<Derived>::Scalar>
+class FisheyeBase : public CameraFunctions<Derived>, 
+                    public ComplexTypes<typename Eigen::internal::traits<Derived>::Scalar>
 {
     typedef CameraFunctions<Derived> FunctionsBase;
 public:
@@ -115,16 +118,27 @@ public:
     using FunctionsBase::resizeViewport;
     
     template<typename NewScalarType>
-    EIGEN_DEVICE_FUNC inline Fisheye<NewScalarType> cast() const { return Fisheye<NewScalarType>(access().template cast<NewScalarType>()); }
+    EIGEN_DEVICE_FUNC inline Fisheye<NewScalarType> cast() const 
+    { 
+        return Fisheye<NewScalarType>(access().template cast<NewScalarType>()); 
+    }
     
     template<typename OtherDerived> 
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE FisheyeBase<Derived>& operator=(const FisheyeBase<OtherDerived> & other) { access_nonconst() = other.access(); return *this; }
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE FisheyeBase<Derived>& operator=(const FisheyeBase<OtherDerived> & other) 
+    {   
+        access_nonconst() = other.access(); return *this; 
+    }
     
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const  { return static_cast<const Derived*>(this)->access(); }
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const 
+    { 
+        return static_cast<const Derived*>(this)->access(); 
+    }
 private:
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ComplexReference access_nonconst()  { return static_cast<Derived*>(this)->access_nonconst(); }
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ComplexReference access_nonconst() 
+    { 
+        return static_cast<Derived*>(this)->access_nonconst(); 
+    }
 public:
-        
     static constexpr unsigned int NumParameters = Eigen::internal::traits<Derived>::NumParameters;
     static constexpr unsigned int ParametersToOptimize = Eigen::internal::traits<Derived>::ParametersToOptimize;
     static constexpr bool CalibrationSupported = Eigen::internal::traits<Derived>::CalibrationSupported;
@@ -137,7 +151,8 @@ public:
     using ForwardParametersJacobianT = typename ComplexTypes<T>::template ForwardParametersJacobianT<ParametersToOptimize>;
     
     template<typename T = Scalar>
-    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PointT inverse(const Derived& ccd, T x, T y) 
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PointT 
+        inverse(const Derived& ccd, T x, T y) 
     {
         using Eigen::numext::tan;
         
@@ -161,7 +176,8 @@ public:
     }
     
     template<typename T = Scalar>
-    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PixelT forward(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt) 
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PixelT 
+        forward(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt) 
     {
         using Eigen::numext::sqrt;
         using Eigen::numext::atan;
@@ -187,20 +203,23 @@ public:
     }
     
     template<typename T = Scalar>
-    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::ForwardPointJacobianT forwardPointJacobian(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt)
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::ForwardPointJacobianT 
+        forwardPointJacobian(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt)
     {   
         using Eigen::numext::sqrt;
         using Eigen::numext::atan;
         
         // dforward-perspective / d{x,y,z}
-        typename ComplexTypes<T>::ForwardPointJacobianT perspective_jacobian = ComplexTypes<T>::ForwardPointJacobianT::Zero();
+        typename ComplexTypes<T>::ForwardPointJacobianT perspective_jacobian = 
+            ComplexTypes<T>::ForwardPointJacobianT::Zero();
         perspective_jacobian(0,0) = T(1.0) / tmp_pt(2);
         perspective_jacobian(0,2) = -tmp_pt(0)/(tmp_pt(2) * tmp_pt(2));
         perspective_jacobian(1,1) = T(1.0) / tmp_pt(2);
         perspective_jacobian(1,2) = -tmp_pt(1)/(tmp_pt(2) * tmp_pt(2));
         
         // dforward-fisheye / d{px,py}
-        typename ComplexTypes<T>::template ForwardParametersJacobianT<2> fisheye_jacobian = ComplexTypes<T>::template ForwardParametersJacobianT<2>::Zero();
+        typename ComplexTypes<T>::template ForwardParametersJacobianT<2> fisheye_jacobian = 
+            ComplexTypes<T>::template ForwardParametersJacobianT<2>::Zero();
         const T a = tmp_pt(0) / tmp_pt(2);
         const T b = tmp_pt(1) / tmp_pt(2);
         const T r2 = a*a + b*b;
@@ -213,7 +232,8 @@ public:
         fisheye_jacobian(1,1) = theta / r - (b * b * theta)/term + (b * b) / (r2 * (r2 + T(1.0)));
         
         // dforward-intrinsics / d{px,py}
-        typename ComplexTypes<T>::template ForwardParametersJacobianT<2> intrinsics_jacobian = ComplexTypes<T>::template ForwardParametersJacobianT<2>::Zero();
+        typename ComplexTypes<T>::template ForwardParametersJacobianT<2> intrinsics_jacobian = 
+            ComplexTypes<T>::template ForwardParametersJacobianT<2>::Zero();
         intrinsics_jacobian(0,0) = ccd.fx();
         intrinsics_jacobian(1,1) = ccd.fy();
         
@@ -221,13 +241,15 @@ public:
     }
     
     template<typename T = Scalar>
-    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ForwardParametersJacobianT<T> forwardParametersJacobian(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt)
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ForwardParametersJacobianT<T> 
+        forwardParametersJacobian(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt)
     {
         using Eigen::numext::sqrt;
         using Eigen::numext::atan;
         
         // dforward-intrinsics / d{fx,fy,u0,v0}
-        typename ComplexTypes<T>::template ForwardParametersJacobianT<4> ret = ComplexTypes<T>::template ForwardParametersJacobianT<4>::Zero();
+        typename ComplexTypes<T>::template ForwardParametersJacobianT<4> ret = 
+            ComplexTypes<T>::template ForwardParametersJacobianT<4>::Zero();
         const T a = tmp_pt(0) / tmp_pt(2);
         const T b = tmp_pt(1) / tmp_pt(2);
         const T r2 = a*a + b*b;
@@ -365,9 +387,13 @@ public:
     }
     
     EIGEN_DEVICE_FUNC inline Fisheye() : parameters(Eigen::Matrix<Scalar,NumParameters,1>::Zero()) { }
+    
     EIGEN_DEVICE_FUNC inline Fisheye(const typename Eigen::internal::traits<Fisheye<_Scalar,_Options> >::ComplexType& vec) : parameters(vec) { }
     
-    EIGEN_DEVICE_FUNC inline Fisheye& operator=(const typename Eigen::internal::traits<Fisheye<_Scalar,_Options> >::ComplexType& vec) { access_nonconst() = vec; return *this; }
+    EIGEN_DEVICE_FUNC inline Fisheye& operator=(const typename Eigen::internal::traits<Fisheye<_Scalar,_Options> >::ComplexType& vec) 
+    { 
+        access_nonconst() = vec; return *this; 
+    }
     
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const { return parameters; }
 protected:
@@ -378,7 +404,8 @@ protected:
 template<typename T>
 inline std::ostream& operator<<(std::ostream& os, const Fisheye<T>& p)
 {
-    os << "Fisheye(fx = " << p.fx() << ", fy = " << p.fy() << ", u0 = " << p.u0() << ", v0 = " << p.v0() << ", " << p.width() << " x " << p.height() << ", radius = " << p.radius() << ")";
+    os << "Fisheye(fx = " << p.fx() << ", fy = " << p.fy() << ", u0 = " << p.u0() << ", v0 = " << p.v0() 
+       << ", " << p.width() << " x " << p.height() << ", radius = " << p.radius() << ")";
     return os;
 }
 
@@ -390,7 +417,8 @@ namespace Eigen
  * Fisheye Camera Model, Eigen Map.
  */
 template<typename _Scalar, int _Options>
-class Map<cammod::Fisheye<_Scalar>, _Options> : public cammod::FisheyeBase<Map<cammod::Fisheye<_Scalar>, _Options>>
+class Map<cammod::Fisheye<_Scalar>, _Options>
+    : public cammod::FisheyeBase<Map<cammod::Fisheye<_Scalar>, _Options>>
 {
     typedef cammod::FisheyeBase<Map<cammod::Fisheye<_Scalar>, _Options>> Base;
     
@@ -418,7 +446,8 @@ protected:
  * Fisheye Camera Model, Eigen Map const.
  */
 template<typename _Scalar, int _Options>
-class Map<const cammod::Fisheye<_Scalar>, _Options> : public cammod::FisheyeBase<Map<const cammod::Fisheye<_Scalar>, _Options>>
+class Map<const cammod::Fisheye<_Scalar>, _Options>
+    : public cammod::FisheyeBase<Map<const cammod::Fisheye<_Scalar>, _Options>>
 {
     typedef cammod::FisheyeBase<Map<const cammod::Fisheye<_Scalar>, _Options>> Base;
 public:
@@ -434,6 +463,7 @@ public:
 protected:
     const Map<const Matrix<Scalar,NumParameters,1>,_Options> parameters;
 };
+
 }
     
 #endif // FISHEYE_CAMERA_MODEL_HPP

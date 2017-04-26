@@ -49,7 +49,7 @@ static constexpr unsigned int GenericParameterCount = 9;
 }
 } 
 
-// Eigen Traits 
+// Eigen Traits, but also some traits for our use 
 namespace Eigen 
 {
     namespace internal 
@@ -69,14 +69,16 @@ namespace Eigen
         };
         
         template<typename _Scalar, int _Options>
-        struct traits<Map<cammod::Generic<_Scalar>, _Options> > : traits<cammod::Generic<_Scalar, _Options> > 
+        struct traits<Map<cammod::Generic<_Scalar>, _Options> >
+            : traits<cammod::Generic<_Scalar, _Options> > 
         {
             typedef _Scalar Scalar;
             typedef Map<Matrix<Scalar,cammod::internal::GenericParameterCount,1>,_Options> ComplexType;
         };
         
         template<typename _Scalar, int _Options>
-        struct traits<Map<const cammod::Generic<_Scalar>, _Options> > : traits<const cammod::Generic<_Scalar, _Options> > 
+        struct traits<Map<const cammod::Generic<_Scalar>, _Options> >
+            : traits<const cammod::Generic<_Scalar, _Options> > 
         {
             typedef _Scalar Scalar;
             typedef Map<const Matrix<Scalar,cammod::internal::GenericParameterCount,1>,_Options> ComplexType;
@@ -116,14 +118,27 @@ public:
     using FunctionsBase::resizeViewport;
     
     template<typename NewScalarType>
-    EIGEN_DEVICE_FUNC inline Generic<NewScalarType> cast() const { return Generic<NewScalarType>(access().template cast<NewScalarType>()); }
+    EIGEN_DEVICE_FUNC inline Generic<NewScalarType> cast() const 
+    { 
+        return Generic<NewScalarType>(access().template cast<NewScalarType>()); 
+    }
     
     template<typename OtherDerived> 
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE GenericBase<Derived>& operator=(const GenericBase<OtherDerived> & other) { access_nonconst() = other.access(); return *this; }
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE GenericBase<Derived>& operator=(const GenericBase<OtherDerived> & other) 
+    { 
+        access_nonconst() = other.access(); 
+        return *this; 
+    }
     
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const  { return static_cast<const Derived*>(this)->access(); }
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const  
+    { 
+        return static_cast<const Derived*>(this)->access(); 
+    }
 private:
-    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ComplexReference access_nonconst()  { return static_cast<Derived*>(this)->access_nonconst(); }
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ComplexReference access_nonconst() 
+    { 
+        return static_cast<Derived*>(this)->access_nonconst(); 
+    }
 public:
     static constexpr unsigned int NumParameters = Eigen::internal::traits<Derived>::NumParameters;
     static constexpr unsigned int ParametersToOptimize = Eigen::internal::traits<Derived>::ParametersToOptimize;
@@ -137,8 +152,11 @@ public:
     using ForwardParametersJacobianT = typename ComplexTypes<T>::template ForwardParametersJacobianT<ParametersToOptimize>;
     
     template<typename T = Scalar>
-    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PointT inverse(const Derived& ccd, T x, T y) 
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PointT 
+        inverse(const Derived& ccd, T x, T y) 
     {
+        using Eigen::numext::sqrt;
+        
         typename ComplexTypes<T>::PointT ret;
         
         // inverse intrinsics pixel -> image plane
@@ -164,7 +182,8 @@ public:
     }
     
     template<typename T = Scalar>
-    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PixelT forward(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt) 
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::PixelT 
+        forward(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt) 
     {
         typename ComplexTypes<T>::PixelT ret, p;
         
@@ -182,11 +201,13 @@ public:
     }
     
     template<typename T = Scalar>
-    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::ForwardPointJacobianT forwardPointJacobian(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt)
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename ComplexTypes<T>::ForwardPointJacobianT 
+        forwardPointJacobian(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt)
     {
         using Eigen::numext::sqrt;
         
-        typename ComplexTypes<T>::ForwardPointJacobianT perspective_jacobian = ComplexTypes<T>::ForwardPointJacobianT::Zero();
+        typename ComplexTypes<T>::ForwardPointJacobianT perspective_jacobian = 
+            ComplexTypes<T>::ForwardPointJacobianT::Zero();
         const T x2 = tmp_pt(0) * tmp_pt(0);
         const T y2 = tmp_pt(1) * tmp_pt(1);
         const T z2 = tmp_pt(2) * tmp_pt(2);
@@ -210,7 +231,8 @@ public:
         perspective_jacobian(1,2) =-(tmp_pt(1) * tmp_pt(2)) / denom1 - ( tmp_pt(1) * (T(1.0) / r - term1 ) ) / denom3;
         
         // intrinsics / d{px,py}
-        typename ComplexTypes<T>::template ForwardParametersJacobianT<2> intrinsics_jacobian = ComplexTypes<T>::template ForwardParametersJacobianT<2>::Zero();
+        typename ComplexTypes<T>::template ForwardParametersJacobianT<2> intrinsics_jacobian = 
+            ComplexTypes<T>::template ForwardParametersJacobianT<2>::Zero();
         intrinsics_jacobian(0,0) = ccd.fx();
         intrinsics_jacobian(1,1) = ccd.fy();
         
@@ -218,7 +240,8 @@ public:
     }
     
     template<typename T = Scalar>
-    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ForwardParametersJacobianT<T> forwardParametersJacobian(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt)
+    static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ForwardParametersJacobianT<T> 
+        forwardParametersJacobian(const Derived& ccd, const typename ComplexTypes<T>::PointT& tmp_pt)
     {
         ForwardParametersJacobianT<T> ret = ForwardParametersJacobianT<T>::Zero();
         
@@ -376,15 +399,22 @@ public:
     
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
-    EIGEN_DEVICE_FUNC inline Generic(Scalar fx, Scalar fy, Scalar u0, Scalar v0, Scalar epsilon = 0.0, Scalar w = 0.0 , Scalar h = 0.0, Scalar r1 = 0.0, Scalar r2 = 0.0)
+    EIGEN_DEVICE_FUNC inline Generic(Scalar fx, Scalar fy, Scalar u0, Scalar v0, 
+                                     Scalar epsilon = 0.0, Scalar w = 0.0 , Scalar h = 0.0, 
+                                     Scalar r1 = 0.0, Scalar r2 = 0.0)
     {
         access_nonconst() << fx , fy , u0 , v0 , epsilon, w , h , r1, r2;
     }
     
     EIGEN_DEVICE_FUNC inline Generic() : parameters(Eigen::Matrix<Scalar,NumParameters,1>::Zero()) { }
+    
     EIGEN_DEVICE_FUNC inline Generic(const typename Eigen::internal::traits<Generic<_Scalar,_Options> >::ComplexType& vec) : parameters(vec) { }
     
-    EIGEN_DEVICE_FUNC inline Generic& operator=(const typename Eigen::internal::traits<Generic<_Scalar,_Options> >::ComplexType& vec) { access_nonconst() = vec; return *this; }
+    EIGEN_DEVICE_FUNC inline Generic& operator=(const typename Eigen::internal::traits<Generic<_Scalar,_Options> >::ComplexType& vec) 
+    { 
+        access_nonconst() = vec; 
+        return *this; 
+    }
     
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE ConstComplexReference access() const { return parameters; }
 protected:
@@ -395,7 +425,9 @@ protected:
 template<typename T>
 inline std::ostream& operator<<(std::ostream& os, const Generic<T>& p)
 {
-    os << "IdealGeneric(fx = " << p.fx() << ", fy = " << p.fy() << ", u0 = " << p.u0() << ", v0 = " << p.v0() << ", eps = " << p.epsilon() << "," << p.width() << " x " << p.height() << ", r1 = " << p.r1() << ", r2 = " << p.r2() << ")";
+    os << "IdealGeneric(fx = " << p.fx() << ", fy = " << p.fy() << ", u0 = " << p.u0() << ", v0 = " << p.v0() 
+       << ", eps = " << p.epsilon() << "," << p.width() << " x " << p.height() 
+       << ", r1 = " << p.r1() << ", r2 = " << p.r2() << ")";
     return os;
 }
 
@@ -407,7 +439,8 @@ namespace Eigen
  * Ideal Generic Camera Model, Eigen Map.
  */
 template<typename _Scalar, int _Options>
-class Map<cammod::Generic<_Scalar>, _Options> : public cammod::GenericBase<Map<cammod::Generic<_Scalar>, _Options>>
+class Map<cammod::Generic<_Scalar>, _Options> 
+    : public cammod::GenericBase<Map<cammod::Generic<_Scalar>, _Options>>
 {
     typedef cammod::GenericBase<Map<cammod::Generic<_Scalar>, _Options>> Base;
     
@@ -435,7 +468,8 @@ protected:
  * Ideal Generic Camera Model, Eigen Map const.
  */
 template<typename _Scalar, int _Options>
-class Map<const cammod::Generic<_Scalar>, _Options> : public cammod::GenericBase<Map<const cammod::Generic<_Scalar>, _Options>>
+class Map<const cammod::Generic<_Scalar>, _Options> 
+    : public cammod::GenericBase<Map<const cammod::Generic<_Scalar>, _Options>>
 {
     typedef cammod::GenericBase<Map<const cammod::Generic<_Scalar>, _Options>> Base;
 public:
@@ -452,6 +486,7 @@ public:
 protected:
     const Map<const Matrix<Scalar,NumParameters,1>,_Options> parameters;
 };
+
 }
     
 #endif // GENERIC_CAMERA_MODEL_HPP
