@@ -39,6 +39,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
+#include <unsupported/Eigen/AutoDiff>
 
 #include <sophus/so2.hpp>
 #include <sophus/se2.hpp>
@@ -61,6 +62,44 @@
 #define CAMERA_MODELS_HAVE_SERIALIZER
 #define CAMERA_MODELS_SERIALIZE(ARCHIVE,NAME,VAR) ARCHIVE & boost::serialization::make_nvp(NAME,VAR)
 #endif // CAMERA_MODELS_SERIALIZER_BOOST 
+
+#ifndef VISIONCORE_EIGEN_MISSING_BITS_HPP
+#define VISIONCORE_EIGEN_MISSING_BITS_HPP
+namespace Eigen 
+{
+
+namespace numext
+{
+  
+template<typename T>
+EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
+T atan2(const T& y, const T &x) {
+  EIGEN_USING_STD_MATH(atan2);
+  return atan2(y,x);
+}
+
+#ifdef __CUDACC__
+template<> EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
+float atan2(const float& y, const float &x) { return ::atan2f(y,x); }
+
+template<> EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE
+double atan2(const double& y, const double &x) { return ::atan2(y,x); }
+#endif
+  
+}
+
+template<typename DerType> 
+inline const Eigen::AutoDiffScalar<EIGEN_EXPR_BINARYOP_SCALAR_RETURN_TYPE(typename Eigen::internal::remove_all<DerType>::type, typename Eigen::internal::traits<typename Eigen::internal::remove_all<DerType>::type>::Scalar, product)> 
+atan(const Eigen::AutoDiffScalar<DerType>& x) 
+{ 
+  using namespace Eigen; 
+  EIGEN_UNUSED typedef typename Eigen::internal::traits<typename Eigen::internal::remove_all<DerType>::type>::Scalar Scalar; 
+  using numext::atan;
+  return Eigen::MakeAutoDiffScalar(atan(x.value()),x.derivatives() * ( Scalar(1) / (Scalar(1) + x.value() * x.value()) ));
+}
+
+}
+#endif // VISIONCORE_EIGEN_MISSING_BITS_HPP
 
 namespace cammod
 {
@@ -92,37 +131,37 @@ struct CameraModelToTypeAndName;
 template<typename T>
 struct ComplexTypes
 {
-    typedef Sophus::SO3Group<T> RotationT;
-    typedef Sophus::SE3Group<T> TransformT;
+    typedef Sophus::SO3<T> RotationT;
+    typedef Sophus::SE3<T> TransformT;
     typedef Eigen::Map<TransformT> TransformMapT;
     typedef Eigen::Map<const TransformT> ConstTransformMapT;
     typedef Eigen::Map<RotationT> RotationMapT;
     typedef Eigen::Map<const RotationT> ConstRotationMapT;
     
-    typedef Sophus::SO2Group<T> Rotation2DT;
-    typedef Sophus::SE2Group<T> Transform2DT;
+    typedef Sophus::SO2<T> Rotation2DT;
+    typedef Sophus::SE2<T> Transform2DT;
     typedef Eigen::Map<Transform2DT> Transform2DMapT;
     typedef Eigen::Map<const Transform2DT> ConstTransform2DMapT;
     typedef Eigen::Map<Rotation2DT> Rotation2DMapT;
     typedef Eigen::Map<const Rotation2DT> ConstRotation2DMapT;
     
-    typedef typename Sophus::SE3Group<T>::Tangent TangentTransformT;
-    typedef Eigen::Map<typename Sophus::SE3Group<T>::Tangent> TangentTransformMapT;
-    typedef Eigen::Map<const typename Sophus::SE3Group<T>::Tangent> ConstTangentTransformMapT;
+    typedef typename Sophus::SE3<T>::Tangent TangentTransformT;
+    typedef Eigen::Map<typename Sophus::SE3<T>::Tangent> TangentTransformMapT;
+    typedef Eigen::Map<const typename Sophus::SE3<T>::Tangent> ConstTangentTransformMapT;
     
-    typedef typename Sophus::SE2Group<T>::Tangent TangentTransform2DT;
-    typedef Eigen::Map<typename Sophus::SE2Group<T>::Tangent> TangentTransform2DMapT;
-    typedef Eigen::Map<const typename Sophus::SE2Group<T>::Tangent> ConstTangentTransform2DMapT;
+    typedef typename Sophus::SE2<T>::Tangent TangentTransform2DT;
+    typedef Eigen::Map<typename Sophus::SE2<T>::Tangent> TangentTransform2DMapT;
+    typedef Eigen::Map<const typename Sophus::SE2<T>::Tangent> ConstTangentTransform2DMapT;
     
-    typedef typename Sophus::SO3Group<T>::Tangent TangentRotationT;
-    typedef Eigen::Map<typename Sophus::SO3Group<T>::Tangent> TangentRotationMapT;
-    typedef Eigen::Map<const typename Sophus::SO3Group<T>::Tangent> ConstTangentRotationMapT;
+    typedef typename Sophus::SO3<T>::Tangent TangentRotationT;
+    typedef Eigen::Map<typename Sophus::SO3<T>::Tangent> TangentRotationMapT;
+    typedef Eigen::Map<const typename Sophus::SO3<T>::Tangent> ConstTangentRotationMapT;
     
-    typedef typename Sophus::SO2Group<T>::Tangent TangentRotation2DT;
-    typedef Eigen::Map<typename Sophus::SO2Group<T>::Tangent> TangentRotation2DMapT;
-    typedef Eigen::Map<const typename Sophus::SO2Group<T>::Tangent> ConstTangentRotation2DMapT;
+    typedef typename Sophus::SO2<T>::Tangent TangentRotation2DT;
+    typedef Eigen::Map<typename Sophus::SO2<T>::Tangent> TangentRotation2DMapT;
+    typedef Eigen::Map<const typename Sophus::SO2<T>::Tangent> ConstTangentRotation2DMapT;
     
-    typedef Eigen::Matrix<T,2,1> PixelT;
+    typedef Eigen::Matrix<T,2,1,Option> PixelT;
     typedef Eigen::Map<PixelT> PixelMapT;
     typedef Eigen::Map<const PixelT> ConstPixelMapT;
     
