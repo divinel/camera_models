@@ -161,7 +161,7 @@ struct ComplexTypes
     typedef Eigen::Map<typename Sophus::SO2<T>::Tangent> TangentRotation2DMapT;
     typedef Eigen::Map<const typename Sophus::SO2<T>::Tangent> ConstTangentRotation2DMapT;
     
-    typedef Eigen::Matrix<T,2,1,Option> PixelT;
+    typedef Eigen::Matrix<T,2,1> PixelT;
     typedef Eigen::Map<PixelT> PixelMapT;
     typedef Eigen::Map<const PixelT> ConstPixelMapT;
     
